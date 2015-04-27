@@ -88,25 +88,26 @@ def place(inp,out):
                                 t = board[y+dy+ddy][x+dx+ddx]
                                 if isinstance(t,int) and t < i:
                                     connected = True
-                        assert 0 <= y+dy < 32
-                        assert 0 <= x+dx < 32
-                        assert board[y+dy][x+dx] == ' '
+                        if not (0 <= y+dy < 32) or not (0 <= x+dx < 32):
+                            raise ValueError('{}-th block is not on the board at ({}, {})'.format(i, x+dx, y+dy))
+                        if not (board[y+dy][x+dx] == ' '):
+                            t = board[y+dy][x+dx]
+                            raise ValueError('{}-th block overlaps with {} at ({}, {})'.format(
+                                i, ('obstacle' if t == '#' else '{}-th block'.format(t)), x+dx, y+dy))
                         board[y+dy][x+dx] = i
-            if not first:
-                assert connected
+            if not first and not connected:
+                raise ValueError('{}-th block is not connected with previous one'.format(i))
             first = False
     return board
 
-def visualize(*args):
-    board = place(*args)
+def visualize(board):
     for y in range(32):
         for x in range(32):
             if not isinstance(board[y][x],bool):
                 board[y][x] = str(board[y][x])
     return '\n'.join(map(''.join, board))
 
-def score(*args):
-    board = place(*args)
+def score(board):
     n = 0
     for y in range(32):
         for x in range(32):
@@ -123,5 +124,11 @@ if __name__ == '__main__':
     inp = read_input(open(args.input))
     out = read_output(sys.stdin)
     block = inp['blocks'][0]
-    print(visualize(inp,out))
-    print('score: {}'.format(score(inp,out)))
+    try:
+        board = place(inp,out)
+    except ValueError as e:
+        print('error:', e)
+        exit(1)
+    else:
+        print(visualize(board))
+        print('score: {}'.format(score(board)))
