@@ -3,10 +3,10 @@
 import sys
 import copy
 
-def from_zero_one_string(s):
-    return list(map(lambda x: x == '1', s))
-def to_zero_one_string(s):
-    return ''.join(map(lambda x: '1' if x else '0', s))
+def sharpen(x):
+    return { '0': ' ', '1': '#' }[x]
+def dull(x):
+    return { ' ': '0', '#': '1' }[x]
 
 def makelist(*args, default=None):
     if len(args) == 0:
@@ -38,15 +38,15 @@ def block_rotate(b,r):
                 c[y][x] = b[y][x]
     return c
 def block_visualize(b):
-    return '\n'.join(map(to_zero_one_string, b))
+    return '\n'.join(map(map(dull, b)))
 
 def read_input(f):
-    board = [from_zero_one_string(f.readline().strip()) for i in range(32)]
+    board = [list(map(sharpen,f.readline().strip())) for i in range(32)]
     f.readline()
     n = int(f.readline().strip())
     blocks = []
     for _ in range(n):
-        blocks.append([from_zero_one_string(f.readline().strip()) for i in range(8)])
+        blocks.append([list(map(sharpen,f.readline().strip())) for i in range(8)])
         f.readline()
     return { 'board': board, 'blocks': blocks }
 
@@ -65,11 +65,15 @@ def generate_output(f):
 def read_output(f):
     return list(generate_output(f))
 
+def isboolean(x):
+    return isinstance(x,bool) and not isinstance(x,int)
 def place(inp,out):
     assert len(inp['blocks']) == len(out)
     board = copy.deepcopy(inp['board'])
+    first = True
     for i in range(len(out)):
         if out[i] is not None:
+            connected = False
             block = inp['blocks'][i]
             x, y, h, r = out[i]
             if not h:
@@ -78,20 +82,26 @@ def place(inp,out):
                 block = block_rotate(block, r)
             for dy in range(8):
                 for dx in range(8):
-                    if block[dy][dx]:
+                    if block[dy][dx] == '#':
+                        for ddy in [-1,0,1]:
+                            for ddx in [-1,0,1]:
+                                t = board[y+dy+ddy][x+dx+ddx]
+                                if isinstance(t,int) and t < i:
+                                    connected = True
                         assert 0 <= y+dy < 32
                         assert 0 <= x+dx < 32
-                        assert board[y+dy][x+dx] == False
+                        assert board[y+dy][x+dx] == ' '
                         board[y+dy][x+dx] = i
+            if not first:
+                assert connected
+            first = False
     return board
 
 def visualize(*args):
     board = place(*args)
     for y in range(32):
         for x in range(32):
-            if isinstance(board[y][x],bool):
-                board[y][x] = '#' if board[y][x] else ' '
-            else:
+            if not isinstance(board[y][x],bool):
                 board[y][x] = str(board[y][x])
     return '\n'.join(map(''.join, board))
 
