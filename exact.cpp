@@ -146,6 +146,9 @@ private:
     }
 };
 
+// まず問題にはならないと思われるが、
+// > (2) 敷き詰めた石の個数（石の個数が少ないチームが上位）
+// であるが得点のみの意味での厳密解であることに注意
 int main() {
     ios_base::sync_with_stdio(false);
     input_t a; cin >> a;
