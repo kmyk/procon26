@@ -23,19 +23,17 @@ def block_flip(b):
         for x in range(8):
             c[y][8-x-1] = b[y][x]
     return c
-def block_rotate(b,r):
-    assert r == 0 or r == 90 or r == 180 or r == 270
+def block_rotate_90(b):
     c = makelist(8,8)
     for y in range(8):
         for x in range(8):
-            if r == 90:
-                c[x][8-y-1] = b[y][x]
-            elif r == 180:
-                c[8-y-1][8-x-1] = b[y][x]
-            elif r == 270:
-                c[8-x-1][y] = b[y][x]
-            else:
-                c[y][x] = b[y][x]
+            c[x][8-y-1] = b[y][x]
+    return c
+def block_rotate(b,r):
+    assert r == 0 or r == 90 or r == 180 or r == 270
+    c = copy.deepcopy(b)
+    for i in range(int(r / 90)):
+        c = block_rotate_90(c)
     return c
 def block_visualize(b):
     return '\n'.join(map(map(dull, b)))
