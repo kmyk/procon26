@@ -1,12 +1,16 @@
-.PHONY: all build build/fast test test/validate
+.PHONY: all build build/exact build/exact/fast test test/validate
+
+CXXFLAGS = -std=c++14 -Wall
 
 all: build
 
-build:
-	${CXX} -std=c++14 -Wall -g bruteforce.cpp
+build: build/exact
 
-build/fast:
-	${CXX} -std=c++14 -Wall -O3 -DNDEBUG bruteforce.cpp
+build/exact: exact.cpp
+	${CXX} ${CXXFLAGS} -g $^
+
+build/exact/fast: exact.cpp
+	${CXX} ${CXXFLAGS} -O3 -DNDEBUG $^
 
 test:
 	bash -c 'for f in test/*.in ; do f="$$(echo $$f | sed -e 's/\.in$$//')" ; echo $$f ; cat $$f.in | ./a.out | ./validator.py -i $$f.in ; done'
