@@ -10,18 +10,26 @@ class solver {
     board brd;
     vector<block> blks;
     vector<placement_t> result;
-    int highscore;
+    vector<int> rest_score; // rest_score[i] = max_score - blks[0 .. i-1].area()
+    int highscore; // complement, the area of used blocks
 public:
     solver() = default;
 
 public:
-    output_t operator () (input_t const & a) {
+    pair<vector<placement_t>, int> solve(input_t const & a) {
+        int n = a.blocks.size();
         brd = board(a.board);
-        blks.resize(a.blocks.size()); for (int i : irange(blks.size())) blks[i] = block(a.blocks[i]);
+        blks.resize(n); for (int i : irange(n)) blks[i] = block(a.blocks[i]);
 #ifndef NDEBUG
         cerr << "board size: " << brd.size() << endl;
         for (auto & blk : blks) cerr << "block size: " << blk.size(H,R0) << endl;
 #endif
+        rest_score.resize(n); {
+            int max_score = 0;
+            for (auto blk : blks) max_score += blk.area();
+            rest_score[0] = max_score;
+            for (int i : irange(0,n-1)) rest_score[i+1] = rest_score[i] - blks[i].area();
+        }
         result.clear();
         highscore = -1;
         vector<placement_t> acc;
@@ -36,7 +44,11 @@ public:
             }
         }
 #endif
-        return { result };
+        return make_pair(result, brd.area() - highscore);
+    }
+
+    output_t operator () (input_t const & a) {
+        return { solve(a).first };
     }
 
 private:
@@ -86,6 +98,7 @@ private:
             }
             return;
         }
+        if (score + rest_score[l] <= highscore) return;
         bool is_first = score == 0;
         block const & blk = blks[l];
         if (is_first) {
