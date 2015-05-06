@@ -109,6 +109,7 @@ private:
         }
         for (flip_t f : { H, T }) {
             for (rot_t r : { R0, R90, R180, R270 }) {
+                if (blk.is_duplicated(f,r)) continue;
                 //   543210      [w=5]
                 //   [w=5][ ... ])
                 //   ^    ^      ^      => [xl-w, xr]

@@ -1,6 +1,8 @@
 #include <iostream>
 #include <vector>
+#include <set>
 #include <cassert>
+#include <cstdint>
 // #include <boost/geometry.hpp>
 #include <boost/range/irange.hpp>
 namespace boost {
@@ -147,6 +149,23 @@ int area_cell(bool const (& a)[N][N]) {
     return n;
 }
 
+uint64_t signature_block(bool const (& a)[block_size][block_size], point_t const & offset) {
+    using namespace boost;
+    static_assert (block_size == 8, "");
+    uint64_t z = 0; // 8*8 == 64
+    for (int y : irange(offset.y, 8)) {
+        uint64_t w = 0;
+        for (int x : irange(offset.x, 8)) {
+            w = w << 1;
+            if (a[y][x]) w = w | 1;
+        }
+        w = w << offset.x;
+        z = (z << 8) | w;
+    }
+    z = z << (8 * offset.y);
+    return z;
+}
+
 class board {
 public:
     static constexpr int N = board_size;
@@ -183,6 +202,7 @@ private:
     point_t m_offset[2][4];
     point_t m_size[2][4];
     int m_area;
+    bool m_duplicated[2][4]; // true => you should ignore it
 public:
     block() = default;
     block(block_t const & a) {
@@ -206,6 +226,14 @@ public:
         for (flip_t f : { H, T }) {
             for (rot_t r : { R0, R90, R180, R270 }) {
                 shrink_cell(m_cell[f][r], m_offset[f][r], m_size[f][r]);
+            }
+        }
+        std::set<uint64_t> sigs;
+        for (flip_t f : { H, T }) {
+            for (rot_t r : { R0, R90, R180, R270 }) {
+                uint64_t sig = signature_block(m_cell[f][r], m_offset[f][r]);
+                m_duplicated[f][r] = sigs.count(sig);
+                sigs.insert(sig);
             }
         }
     }
@@ -236,4 +264,5 @@ public:
         int ax = p.p.x + offset(p.f,p.r).x + q.x;
         return { ax, ay };
     }
+    bool is_duplicated(flip_t f, rot_t r) const { return m_duplicated[f][r]; }
 };
