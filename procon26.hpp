@@ -51,7 +51,9 @@ inline std::istream & operator >> (std::istream & input, block_t & a)  {
 inline std::istream & operator >> (std::istream & input, input_t & a)  {
     using namespace boost;
     input >> a.board;
+    // > 石の個数は 1 個以上，256 個以下です。
     int n; input >> n;
+    assert (1 <= n and n <= 256);
     a.blocks.resize(n);
     for (int i : irange(n)) input >> a.blocks[i];
     return input;
