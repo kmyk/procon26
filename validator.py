@@ -2,20 +2,13 @@
 
 import sys
 import copy
+import string
+from procon26 import *
 
 def sharpen(x):
     return { '0': ' ', '1': '#' }[x]
 def dull(x):
     return { ' ': '0', '#': '1' }[x]
-
-def makelist(*args, default=None):
-    if len(args) == 0:
-        return None
-    else:
-        result = []
-        for i in range(args[0]):
-            result.append(makelist(*args[1:], default=default))
-        return result
 
 def block_flip(b):
     c = makelist(8,8)
@@ -35,8 +28,6 @@ def block_rotate(b,r):
     for i in range(int(r / 90)):
         c = block_rotate_90(c)
     return c
-def block_visualize(b):
-    return '\n'.join(map(map(dull, b)))
 
 def read_input(f):
     board = [list(map(sharpen,f.readline().strip())) for i in range(32)]
@@ -63,8 +54,6 @@ def generate_output(f):
 def read_output(f):
     return list(generate_output(f))
 
-def isboolean(x):
-    return isinstance(x,bool) and not isinstance(x,int)
 def place(inp,out):
     assert len(inp['blocks']) == len(out)
     board = copy.deepcopy(inp['board'])
@@ -101,8 +90,16 @@ def place(inp,out):
 def visualize(board):
     for y in range(32):
         for x in range(32):
-            if not isinstance(board[y][x],bool):
-                board[y][x] = str(board[y][x])
+            if not isinstance(board[y][x], bool):
+                if isinstance(board[y][x], int):
+                    if 0 <= board[y][x] < 10:
+                        board[y][x] = str(board[y][x])
+                    elif 10 <= board[y][x] < 10+26:
+                        board[y][x] = string.ascii_uppercase[board[y][x] - 10]
+                    elif 10+26 <= board[y][x] < 10+26+26:
+                        board[y][x] = string.ascii_lowercase[board[y][x] - 10-26]
+                    else:
+                        board[y][x] = '<{}>'.formatint(board[y][x])
     return '\n'.join(map(''.join, board))
 
 def score(board):
