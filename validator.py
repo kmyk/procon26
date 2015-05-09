@@ -72,10 +72,11 @@ def place(inp,out):
                     if block[dy][dx] == '#':
                         for ddy in [-1,0,1]:
                             for ddx in [-1,0,1]:
-                                t = board[y+dy+ddy][x+dx+ddx]
-                                if isinstance(t,int) and t < i:
-                                    connected = True
-                        if not (0 <= y+dy < 32) or not (0 <= x+dx < 32):
+                                if on_board(y+dy+ddy, x+dx+ddx):
+                                    t = board[y+dy+ddy][x+dx+ddx]
+                                    if isinstance(t,int) and t < i:
+                                        connected = True
+                        if not on_board(y+dy, x+dx): 
                             raise ValueError('{}-th block is not on the board at ({}, {})'.format(i, x+dx, y+dy))
                         if not (board[y+dy][x+dx] == ' '):
                             t = board[y+dy][x+dx]

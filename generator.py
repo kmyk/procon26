@@ -60,9 +60,9 @@ def generate_random_board(h, w, s, c):
             if s * 0.9 < sum(yss, []).count(False) < s * 1.1:
                 xss = yss
                 break
-    xss = extend_tile(xss, 32, 32)
     if is_flip:
         xss = flip_tile(xss)
+    xss = extend_tile(xss, 32, 32, True)
     return xss
 
 def is_connected(xss):
