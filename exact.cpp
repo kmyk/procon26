@@ -100,6 +100,11 @@ private:
         }
         if (score + rest_score[l] <= highscore) return;
         bool is_first = score == 0;
+#ifndef NDEBUG
+        if (is_first) {
+            cerr << "done: " << acc.size() << " / " << blks.size() << endl;
+        }
+#endif
         block const & blk = blks[l];
         if (is_first) {
             yl = brd.y();
