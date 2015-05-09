@@ -16,19 +16,14 @@ def read_input(f):
         f.readline()
     return { 'board': board, 'blocks': blocks }
 
-def generate_random_tiles(h, w):
+def generate_random_tiles(h, w, s=None):
+    assert s is None or 0 < s
     board = makelist(w, h, default=False)
     while True:
         ly = random.randrange(h)
-        ry = random.randrange(h) + 1
+        ry = random.randrange(ly, (min(ly + s, h) if s is not None else h)) + 1
         lx = random.randrange(w)
-        rx = random.randrange(w) + 1
-        if not ly < ry:
-            ly, ry = ry, ly
-        if not lx < rx:
-            lx, rx = rx, lx
-        if ly == ry or lx == rx:
-            continue
+        rx = random.randrange(lx, (min(lx + s, w) if s is not None else w)) + 1
         board = copy.deepcopy(board)
         for y in range(ly,ry):
             for x in range(lx,rx):
@@ -54,14 +49,20 @@ def extend_tile(xss, h, w, default=False):
 def generate_random_board(h, w, s, c):
     assert 0 < h <= 32 and 0 < w <= 32
     assert 1 <= s <= h * w
+    if s < h * w / 2:
+        is_flip = True
+        s = h * w - s
+    else:
+        is_flip = False
     xss = None
     while not xss:
-        for yss in itertools.islice(generate_random_tiles(h,w), c, c*2+30):
-            if s * 0.7 < sum(yss, []).count(True) < s * 1.3:
+        for yss in itertools.islice(generate_random_tiles(h, w, int(min(h, w) * (1 - s / (h * w)))), c, c*2+30):
+            if s * 0.9 < sum(yss, []).count(False) < s * 1.1:
                 xss = yss
                 break
     xss = extend_tile(xss, 32, 32)
-    xss = flip_tile(xss)
+    if is_flip:
+        xss = flip_tile(xss)
     return xss
 
 def is_connected(xss):
