@@ -2,9 +2,22 @@
 #include <vector>
 #include <algorithm>
 #include <cassert>
+#ifndef NSIGNAL
+#include <csignal>
+#endif
 #include "procon26.hpp"
 using namespace std;
 using namespace boost;
+
+#ifndef NSIGNAL
+output_t g_result;
+void signal_handler(int param) {
+    cerr << "*** signal " << param << " caught ***" << endl;
+    cerr << g_result;
+    cerr << "***" << endl;
+    exit(param);
+}
+#endif
 
 class solver {
     board brd;
@@ -20,7 +33,7 @@ public:
         int n = a.blocks.size();
         brd = board(a.board);
         blks.resize(n); for (int i : irange(n)) blks[i] = block(a.blocks[i]);
-#ifndef NDEBUG
+#ifndef NLOG
         cerr << "board size: " << brd.size() << endl;
         for (auto & blk : blks) cerr << "block size: " << blk.size(H,R0) << endl;
 #endif
@@ -34,7 +47,13 @@ public:
         highscore = -1;
         vector<placement_t> acc;
         bool used[board_size][board_size] = {};
+#ifndef NSIGNAL
+        signal(SIGINT, &signal_handler);
+#endif
         dfs(acc, 0, used, -1,-1,-1,-1);
+#ifndef NSIGNAL
+        signal(SIGINT, SIG_DFL);
+#endif
 #ifndef NDEBUG
         assert (result.size() == a.blocks.size());
         assert (acc.size() == 0);
@@ -92,15 +111,18 @@ private:
             if (highscore < score) {
                 highscore = score;
                 result = acc;
-#ifndef NDEBUG
+#ifndef NLOG
                 cerr << "highscore: " << highscore << endl;
+#endif
+#ifndef NSIGNAL
+                g_result = { result };
 #endif
             }
             return;
         }
         if (score + rest_score[l] <= highscore) return;
         bool is_first = score == 0;
-#ifndef NDEBUG
+#ifndef NLOG
         if (is_first) {
             cerr << "done: " << acc.size() << " / " << blks.size() << endl;
         }
