@@ -56,7 +56,8 @@ def generate_random_board(h, w, s, c):
         is_flip = False
     xss = None
     while not xss:
-        for yss in itertools.islice(generate_random_tiles(h, w, int(min(h, w) * (1 - s / (h * w)))), c, c*2+30):
+        it = generate_random_tiles(h, w, max(1, int(min(h, w) * (1 - s / (h * w)))))
+        for yss in itertools.islice(it, c, c*2+30):
             if s * 0.9 < sum(yss, []).count(False) < s * 1.1:
                 xss = yss
                 break
