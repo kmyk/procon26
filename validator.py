@@ -88,26 +88,33 @@ def place(inp,out):
             first = False
     return board
 
-def visualize(board):
+def visualize(board, double=False):
+    board = copy.deepcopy(board)
     for y in range(32):
         for x in range(32):
             if not isinstance(board[y][x], bool):
-                if isinstance(board[y][x], int):
-                    if 0 <= board[y][x] < 10:
-                        board[y][x] = str(board[y][x])
-                    elif 10 <= board[y][x] < 10+26:
-                        board[y][x] = string.ascii_uppercase[board[y][x] - 10]
-                    elif 10+26 <= board[y][x] < 10+26+26:
-                        board[y][x] = string.ascii_lowercase[board[y][x] - 10-26]
+                if not double:
+                    if isinstance(board[y][x], int):
+                        if 0 <= board[y][x] < 10:
+                            board[y][x] = str(board[y][x])
+                        elif 10 <= board[y][x] < 10+26:
+                            board[y][x] = string.ascii_uppercase[board[y][x] - 10]
+                        elif 10+26 <= board[y][x] < 10+26+26:
+                            board[y][x] = string.ascii_lowercase[board[y][x] - 10-26]
+                        else:
+                            board[y][x] = '<{}>'.format(int(board[y][x]))
+                else:
+                    if isinstance(board[y][x], int):
+                        board[y][x] = hex(board[y][x])[2:].upper().zfill(2)
                     else:
-                        board[y][x] = '<{}>'.formatint(board[y][x])
+                        board[y][x] = board[y][x] * 2
     return '\n'.join(map(''.join, board))
 
 def score(board):
     n = 0
     for y in range(32):
         for x in range(32):
-            if isinstance(board[y][x],bool) and board[y][x] == False:
+            if board[y][x] == ' ':
                 n += 1
     return n
 
@@ -119,12 +126,11 @@ if __name__ == '__main__':
 
     inp = read_input(open(args.input))
     out = read_output(sys.stdin)
-    block = inp['blocks'][0]
     try:
         board = place(inp,out)
     except ValueError as e:
         print('error:', e)
         exit(1)
     else:
-        print(visualize(board))
+        print(visualize(board, double=(10 + 26 + 26 < len(inp['blocks']))))
         print('score: {}'.format(score(board)))
