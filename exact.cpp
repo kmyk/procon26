@@ -73,35 +73,27 @@ public:
 private:
     bool is_puttable(block const & blk, placement_t const & p, bool const (& used)[board_size][board_size], bool is_first) {
         bool connected = false;
-        for (int dy : irange(blk.h(p))) {
-            for (int dx : irange(blk.w(p))) {
-                if (blk.at(p.f,p.r,{dx,dy})) {
-                    point_t q = blk.world(p,{dx,dy});
-                    int x = q.x;
-                    int y = q.y;
-                    if (not (0 <= y and y < board_size)) return false;
-                    if (not (0 <= x and x < board_size)) return false;
-                    if (used[y][x] or not brd.cell()[y][x]) return false;
-                    if (not connected) {
-                        connected = (y+1 < board_size and used[y+1][x])
-                            or (0 <= y-1 and used[y-1][x])
-                            or (x+1 < board_size and used[y][x+1])
-                            or (0 <= x-1 and used[y][x-1]);
-                    }
-                }
+        for (auto q : blk.stones(p.f,p.r)) {
+            point_t r = blk.world(p,q);
+            int x = r.x;
+            int y = r.y;
+            if (not (0 <= y and y < board_size)) return false;
+            if (not (0 <= x and x < board_size)) return false;
+            if (used[y][x] or not brd.cell()[y][x]) return false;
+            if (not connected) {
+                connected = (y+1 < board_size and used[y+1][x])
+                    or (0 <= y-1 and used[y-1][x])
+                    or (x+1 < board_size and used[y][x+1])
+                    or (0 <= x-1 and used[y][x-1]);
             }
         }
         if (not is_first and not connected) return false;
         return true;
     }
     void put(block const & blk, placement_t const & p, bool v, bool (& used)[board_size][board_size]) {
-        for (int dy : irange(blk.h(p))) {
-            for (int dx : irange(blk.w(p))) {
-                if (blk.at(p.f,p.r,{dx,dy})) {
-                    point_t q = blk.world(p,{dx,dy});
-                    used[q.y][q.x] = v;
-                }
-            }
+        for (auto q : blk.stones(p.f,p.r)) {
+            point_t r = blk.world(p,q);
+            used[r.y][r.x] = v;
         }
     }
 

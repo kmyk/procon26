@@ -150,6 +150,16 @@ int area_cell(bool const (& a)[N][N]) {
     }
     return n;
 }
+template <int N>
+std::vector<point_t> collect_cell(bool const (& a)[N][N], point_t const & offset, point_t const & size) {
+    std::vector<point_t> result;
+    for (int y : boost::irange(size.y)) {
+        for (int x : boost::irange(size.x)) {
+            if (a[offset.y+y][offset.x+x]) result.push_back({ x, y });
+        }
+    }
+    return result;
+}
 
 uint64_t signature_block(bool const (& a)[block_size][block_size], point_t const & offset) {
     using namespace boost;
@@ -205,6 +215,7 @@ private:
     point_t m_size[2][4];
     int m_area;
     bool m_duplicated[2][4]; // true => you should ignore it
+    std::vector<point_t> m_stones[2][4];
 public:
     block() = default;
     block(block_t const & a) {
@@ -228,6 +239,7 @@ public:
         for (flip_t f : { H, T }) {
             for (rot_t r : { R0, R90, R180, R270 }) {
                 shrink_cell(m_cell[f][r], m_offset[f][r], m_size[f][r]);
+                m_stones[f][r] = collect_cell(m_cell[f][r], m_offset[f][r], m_size[f][r]);
             }
         }
         std::set<uint64_t> sigs;
@@ -267,4 +279,5 @@ public:
         return { ax, ay };
     }
     bool is_duplicated(flip_t f, rot_t r) const { return m_duplicated[f][r]; }
+    std::vector<point_t> const & stones(flip_t f, rot_t r) const { return m_stones[f][r]; }
 };
