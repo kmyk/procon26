@@ -34,8 +34,8 @@ inline std::istream & operator >> (std::istream & input, board_t & a)  {
     return input;
 }
 inline std::istream & operator >> (std::istream & input, block_t & a)  {
-    repeat (y,board_size) {
-        repeat (x,board_size) {
+    repeat (y,block_size) {
+        repeat (x,block_size) {
             char c; input >> c;
             a.a[y][x] = c == '1';
         }
