@@ -7,7 +7,6 @@
 #endif
 #include "procon26.hpp"
 using namespace std;
-using namespace boost;
 
 #ifndef NSIGNAL
 output_t g_result;
@@ -32,7 +31,7 @@ public:
     pair<vector<placement_t>, int> solve(input_t const & a) {
         int n = a.blocks.size();
         brd = board(a.board);
-        blks.resize(n); for (int i : irange(n)) blks[i] = block(a.blocks[i]);
+        blks.resize(n); repeat (i,n) blks[i] = block(a.blocks[i]);
 #ifndef NLOG
         cerr << "board size: " << brd.size() << endl;
         for (auto & blk : blks) cerr << "block size: " << blk.size(H,R0) << endl;
@@ -41,7 +40,7 @@ public:
             int max_score = 0;
             for (auto blk : blks) max_score += blk.area();
             rest_score[0] = max_score;
-            for (int i : irange(0,n-1)) rest_score[i+1] = rest_score[i] - blks[i].area();
+            repeat_from (i,0,n-1) rest_score[i+1] = rest_score[i] - blks[i].area();
         }
         result.clear();
         highscore = -1;
@@ -57,8 +56,8 @@ public:
 #ifndef NDEBUG
         assert (result.size() == a.blocks.size());
         assert (acc.size() == 0);
-        for (int y : irange(board_size)) {
-            for (int x : irange(board_size)) {
+        repeat (y,board_size) {
+            repeat (x,board_size) {
                 assert (not used[y][x]);
             }
         }
@@ -133,8 +132,8 @@ private:
                 //   [w=5][ ... ])
                 //   ^    ^      ^      => [xl-w, xr]
                 // xl-w   xl    xr
-                for (int y : irange(yl - blk.h(f,r), yr+1)) {
-                    for (int x : irange(xl - blk.w(f,r), xr+1)) {
+                repeat_from (y, yl - blk.h(f,r), yr+1) {
+                    repeat_from (x, xl - blk.w(f,r), xr+1) {
                         placement_t p = { true, { x, y }, f, r };
                         if (is_puttable(blk, p, used, is_first)) {
                             put(blk, p, true, used);
