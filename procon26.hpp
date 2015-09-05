@@ -31,6 +31,15 @@ void copy_cell_flip(bool const (& src)[N][N], bool (& dst)[N][N]) {
         }
     }
 }
+template <int N>
+void copy_cell_negate(bool const (& src)[N][N], bool (& dst)[N][N]) {
+    repeat (y,N) {
+        repeat (x,N) {
+            dst[y][x] = not src[y][x];
+        }
+    }
+}
+
 template <class F, class G>
 void shrink_cell_helper(int n, F pred, G update) {
     while (true) {
@@ -41,7 +50,7 @@ void shrink_cell_helper(int n, F pred, G update) {
     }
 }
 template <int N>
-void shrink_cell(bool (& a)[N][N], point_t & offset, point_t & size) {
+void shrink_cell(bool const (& a)[N][N], point_t & offset, point_t & size) {
     int & x = offset.x;
     int & y = offset.y;
     int & w = size.x;
@@ -90,6 +99,7 @@ uint64_t signature_block(bool const (& a)[block_size][block_size], point_t const
     return z;
 }
 
+// 役割: 原点と大きさの概念の吸収
 class board {
 public:
     static constexpr int N = board_size;
@@ -104,20 +114,26 @@ public:
         m_offset = { 0, 0 };
         m_size = { N, N };
         copy_cell(a.a, m_cell);
-        m_area = area_cell(a.a);
+        bool b[N][N];
+        copy_cell_negate(a.a, b);
+        shrink_cell(b, m_offset, m_size);
+        m_area = area_cell(b);
     }
 
 public:
     bool const (& cell() const) [N][N] { return m_cell; }
     point_t offset() const { return m_offset; }
     point_t size() const { return m_size; }
+    bool at(point_t p) const {
+        point_t q = offset();
+        return m_cell[p.y+q.y][p.x+q.x];
+    }
     int area() const { return m_area; }
-    int x() const { return m_offset.x; }
-    int y() const { return m_offset.y; }
     int w() const { return m_size.x; }
     int h() const { return m_size.y; }
 };
 
+// 役割: 原点と大きさと回転と反転の概念の吸収
 class block {
 public:
     static constexpr int N = block_size;

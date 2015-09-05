@@ -64,8 +64,15 @@ struct placement_t {
 struct output_t {
     std::vector<placement_t> ps;
 };
+
 inline rot_t rot90(rot_t r) {
     return static_cast<rot_t>((r + 1) % 4);
+}
+inline bool operator == (point_t const & a, point_t const & b) {
+    return a.x == b.x and a.y == b.y;
+}
+inline bool operator < (point_t const & a, point_t const & b) {
+    return std::make_pair(a.x, a.y) < std::make_pair(b.x, b.y);
 }
 
 inline std::ostream & operator << (std::ostream & output, flip_t a) { return output << (a == H ? 'H' : 'T'); }

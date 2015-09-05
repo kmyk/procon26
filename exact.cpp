@@ -62,7 +62,7 @@ public:
             }
         }
 #endif
-        return make_pair(result, brd.area() - highscore);
+        return make_pair(result, board_size*board_size - brd.area() - highscore);
     }
 
     output_t operator () (input_t const & a) {
@@ -120,10 +120,10 @@ private:
 #endif
         block const & blk = blks[l];
         if (is_first) {
-            yl = brd.y();
-            yr = brd.y() + brd.h();
-            xl = brd.x();
-            xr = brd.x() + brd.w();
+            yl = brd.offset().y;
+            yr = brd.offset().y + brd.h();
+            xl = brd.offset().x;
+            xr = brd.offset().x + brd.w();
         }
         for (flip_t f : { H, T }) {
             for (rot_t r : { R0, R90, R180, R270 }) {
