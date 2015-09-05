@@ -114,10 +114,8 @@ public:
         m_offset = { 0, 0 };
         m_size = { N, N };
         copy_cell(a.a, m_cell);
-        bool b[N][N];
-        copy_cell_negate(a.a, b);
-        shrink_cell(b, m_offset, m_size);
-        m_area = area_cell(b);
+        m_area = area_cell(a.a);
+        shrink_cell(a.a, m_offset, m_size);
     }
 
 public:

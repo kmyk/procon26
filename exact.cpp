@@ -22,7 +22,7 @@ class solver {
     board brd;
     vector<block> blks;
     vector<placement_t> result;
-    vector<int> rest_score; // rest_score[i] = max_score - blks[0 .. i-1].area()
+    vector<int> rest_stone; // rest_stone[i] = max_stone - blks[0 .. i-1].area()
     int highscore; // complement, the area of used blocks
 public:
     solver() = default;
@@ -34,26 +34,31 @@ public:
         blks.resize(n); repeat (i,n) blks[i] = block(a.blocks[i]);
 #ifndef NLOG
         cerr << "board size: " << brd.size() << endl;
+        cerr << "board area: " << brd.area() << endl;
+        cerr << "blocks number: " << blks.size() << endl;
         for (auto & blk : blks) cerr << "block size: " << blk.size(H,R0) << endl;
 #endif
-        rest_score.resize(n); {
-            int max_score = 0;
-            for (auto blk : blks) max_score += blk.area();
-            rest_score[0] = max_score;
-            repeat_from (i,0,n-1) rest_score[i+1] = rest_score[i] - blks[i].area();
+        rest_stone.resize(n); {
+            int max_stone = 0;
+            for (auto blk : blks) max_stone += blk.area();
+            rest_stone[0] = max_stone;
+            repeat_from (i,0,n-1) rest_stone[i+1] = rest_stone[i] - blks[i].area();
         }
         result.clear();
-        highscore = -1;
+        highscore = brd.area();
         vector<placement_t> acc;
         bool used[board_size][board_size] = {};
 #ifndef NSIGNAL
         signal(SIGINT, &signal_handler);
 #endif
-        dfs(acc, 0, used, -1,-1,-1,-1);
+        dfs(acc, brd.area(), used, -1,-1,-1,-1);
 #ifndef NSIGNAL
         signal(SIGINT, SIG_DFL);
 #endif
 #ifndef NDEBUG
+        if (result.size() < a.blocks.size()) {
+            result.resize(a.blocks.size(), (placement_t){ false });
+        }
         assert (result.size() == a.blocks.size());
         assert (acc.size() == 0);
         repeat (y,board_size) {
@@ -99,7 +104,7 @@ private:
     void dfs(vector<placement_t> & acc, int score, bool (& used)[board_size][board_size], int yl, int yr, int xl, int xr) {
         int l = acc.size();
         if (l == blks.size()) {
-            if (highscore < score) {
+            if (score < highscore) {
                 highscore = score;
                 result = acc;
 #ifndef NLOG
@@ -111,8 +116,8 @@ private:
             }
             return;
         }
-        if (score + rest_score[l] <= highscore) return;
-        bool is_first = score == 0;
+        if (highscore <= score - rest_stone[l]) return;
+        bool is_first = score == brd.area();
 #ifndef NLOG
         if (is_first) {
             cerr << "done: " << acc.size() << " / " << blks.size() << endl;
@@ -132,9 +137,9 @@ private:
                 //   [w=5][ ... ])
                 //   ^    ^      ^      => [xl-w, xr]
                 // xl-w   xl    xr
-                repeat_from (y, yl - blk.h(f,r), yr+1) {
-                    repeat_from (x, xl - blk.w(f,r), xr+1) {
-                        placement_t p = { true, { x, y }, f, r };
+                repeat_from (y, yl - blk.h(f,r), yr + 1) {
+                    repeat_from (x, xl - blk.w(f,r), xr + 1) {
+                        placement_t p = { true, { x - blk.offset(f,r).x, y - blk.offset(f,r).y }, f, r };
                         if (is_puttable(blk, p, used, is_first)) {
                             put(blk, p, true, used);
                             acc.push_back(p);
@@ -150,7 +155,7 @@ private:
                                 nxl = min(nxl, xl);
                                 nxr = max(nxr, xr);
                             }
-                            dfs(acc, score+blk.area(), used, nyl, nyr, nxl, nxr);
+                            dfs(acc, score-blk.area(), used, nyl, nyr, nxl, nxr);
                             acc.pop_back();
                             put(blk, p, false, used);
                         }
