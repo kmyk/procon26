@@ -31,11 +31,11 @@ void copy_cell_flip(T const (& src)[N][N], T (& dst)[N][N]) {
         }
     }
 }
-template <typename T, int N>
-void copy_cell_negate(T const (& src)[N][N], T (& dst)[N][N]) {
+template <typename T, typename S, int N, typename F>
+void copy_cell_map(T const (& src)[N][N], S (& dst)[N][N], F f) {
     repeat (y,N) {
         repeat (x,N) {
-            dst[y][x] = not src[y][x];
+            dst[y][x] = f(src[y][x]);
         }
     }
 }
@@ -50,22 +50,22 @@ void shrink_cell_helper(int n, F pred, G update) {
     }
 }
 template <typename T, int N>
-void shrink_cell(T const (& a)[N][N], point_t & offset, point_t & size) {
+void shrink_cell(T const (& a)[N][N], point_t & offset, point_t & size, T target) {
     int & x = offset.x;
     int & y = offset.y;
     int & w = size.x;
     int & h = size.y;
-    shrink_cell_helper(h, [&](int dy){ return a[y+dy ][x    ]; }, [&](){ x += 1; w -= 1; });
-    shrink_cell_helper(w, [&](int dx){ return a[y    ][x+dx ]; }, [&](){ y += 1; h -= 1; });
-    shrink_cell_helper(h, [&](int dy){ return a[y+dy ][x+w-1]; }, [&](){         w -= 1; });
-    shrink_cell_helper(w, [&](int dx){ return a[y+h-1][x+dx ]; }, [&](){         h -= 1; });
+    shrink_cell_helper(h, [&](int dy){ return a[y+dy ][x    ] != target; }, [&](){ x += 1; w -= 1; });
+    shrink_cell_helper(w, [&](int dx){ return a[y    ][x+dx ] != target; }, [&](){ y += 1; h -= 1; });
+    shrink_cell_helper(h, [&](int dy){ return a[y+dy ][x+w-1] != target; }, [&](){         w -= 1; });
+    shrink_cell_helper(w, [&](int dx){ return a[y+h-1][x+dx ] != target; }, [&](){         h -= 1; });
 }
 template <typename T, int N>
-int area_cell(T const (& a)[N][N]) {
+int area_cell(T const (& a)[N][N], T target) {
     int n = 0;
     repeat (y,N) {
         repeat (x,N) {
-            if (a[y][x]) {
+            if (a[y][x] == target) {
                 n += 1;
             }
         }
@@ -100,13 +100,13 @@ uint64_t signature_block(bool const (& a)[block_size][block_size], point_t const
 }
 
 /**
- * @brief 役割: 原点と大きさの概念の吸収
+ * @brief 役割: 原点と大きさの概念と置いた石の情報の吸収
  */
 class board {
 public:
     static constexpr int N = board_size;
 private:
-    bool m_cell[N][N]; // m_cells?
+    int m_cell[N][N];
     point_t m_offset;
     point_t m_size;
     int m_area;
@@ -115,23 +115,39 @@ public:
     board(board_t const & a) {
         m_offset = { 0, 0 };
         m_size = { N, N };
-        board_t b;
-        copy_cell_negate(a.a, b.a);
-        m_area = area_cell(b.a);
-        shrink_cell(b.a, m_offset, m_size);
-        copy_cell_negate(b.a, m_cell);
+        copy_cell_map(a.a, m_cell, [](bool x) -> int { return x; });
+        shrink();
+    }
+    void shrink() {
+        m_area = area_cell(m_cell, 0);
+        shrink_cell(m_cell, m_offset, m_size, 1);
     }
 
 public:
     point_t offset() const { return m_offset; }
     point_t size() const { return m_size; }
-    bool at(point_t p) const {
+    /**
+     * @return
+     *   - 0: 何も置かれていない
+     *   - 1: 障害物
+     *   - 2+n: n番目の石
+     */
+    int at(point_t p) const {
         point_t q = offset();
         return m_cell[p.y+q.y][p.x+q.x];
     }
     int area() const { return m_area; }
     int w() const { return m_size.x; }
     int h() const { return m_size.y; }
+    /**
+     * @attention 破壊的
+     */
+    void put(point_t p, int n) {
+        point_t q = offset();
+        int & it = m_cell[p.y+q.y][p.x+q.x];
+        assert (it == 0);
+        it = 2+n;
+    }
 };
 
 /**
@@ -157,7 +173,7 @@ public:
             }
         }
         // > 石は 1 個以上かつ，16 個以下のブロックにより構成され，
-        m_area = area_cell(a.a);
+        m_area = area_cell(a.a, true);
         assert (1 <= m_area and m_area <= 16);
         // > 石操作の順番として，はじめに石の裏表を決め，そのあとに回転させる。
         copy_cell(a.a, m_cell[H][R0]);
@@ -169,7 +185,7 @@ public:
         }
         for (flip_t f : { H, T }) {
             for (rot_t r : { R0, R90, R180, R270 }) {
-                shrink_cell(m_cell[f][r], m_offset[f][r], m_size[f][r]);
+                shrink_cell(m_cell[f][r], m_offset[f][r], m_size[f][r], false);
                 m_stones[f][r] = collect_cell(m_cell[f][r], m_offset[f][r], m_size[f][r]);
             }
         }
