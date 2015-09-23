@@ -1,20 +1,20 @@
 .PHONY: all build build/exact build/exact/fast test test/validate
 
 CXXFLAGS = -std=c++14 -Wall
-SRCS = main.cpp exact.cpp procon26.cpp
+SRCS = exact.cpp procon26.cpp common.cpp
 
 all: build
 
 build: build/exact
 
 build/exact:
-	${CXX} ${CXXFLAGS} -g -O2 ${SRCS}
+	${CXX} ${CXXFLAGS} -g -O2 ${SRCS} main.cpp
 
 build/exact/fast:
-	${CXX} ${CXXFLAGS} -O3 -DNDEBUG ${SRCS}
+	${CXX} ${CXXFLAGS} -O3 -DNDEBUG ${SRCS} main.cpp
 
 build/unittest:
-	${CXX} ${CXXFLAGS} -O2 -g unittest.cpp procon26.cpp
+	${CXX} ${CXXFLAGS} -O2 -g ${SRCS} unittest.cpp
 
 test:
 	make test/unittest
