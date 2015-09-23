@@ -37,6 +37,16 @@ public:
         vector<placement_t> acc;
         bool used[board_size][board_size] = {};
         dfs(acc, brd.area(), used, -1,-1,-1,-1);
+#ifndef NDEBUG
+        assert (result.size() <= n);
+        assert (acc.size() == 0);
+        repeat (y,board_size) {
+            repeat (x,board_size) {
+                assert (not used[y][x]);
+            }
+        }
+#endif
+        result.resize(n, (placement_t){ false });
         return make_pair(result, board_size*board_size - brd.area() - highscore);
     }
 
