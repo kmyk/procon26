@@ -13,11 +13,11 @@ constexpr int max_block_number = 256;
 constexpr int max_block_area = 16;
 
 struct board_t {
-    // 石を置けるか
-    bool a[board_size][board_size]; // '0' => true
+    // 障害物があるか
+    bool a[board_size][board_size];
 };
 struct block_t {
-    bool a[block_size][block_size]; // '1' => true
+    bool a[block_size][block_size];
 };
 struct input_t {
     board_t board;
@@ -28,7 +28,7 @@ inline std::istream & operator >> (std::istream & input, board_t & a)  {
     repeat (y,board_size) {
         repeat (x,board_size) {
             char c; input >> c;
-            a.a[y][x] = c == '0';
+            a.a[y][x] = c != '0';
         }
     }
     return input;
@@ -37,7 +37,7 @@ inline std::istream & operator >> (std::istream & input, block_t & a)  {
     repeat (y,block_size) {
         repeat (x,block_size) {
             char c; input >> c;
-            a.a[y][x] = c == '1';
+            a.a[y][x] = c != '0';
         }
     }
     return input;
@@ -73,6 +73,12 @@ inline bool operator == (point_t const & a, point_t const & b) {
 }
 inline bool operator < (point_t const & a, point_t const & b) {
     return std::make_pair(a.x, a.y) < std::make_pair(b.x, b.y);
+}
+inline point_t operator + (point_t const & a, point_t const & b) {
+    return (point_t) { a.x + b.x, a.y + b.y };
+}
+inline point_t operator - (point_t const & a, point_t const & b) {
+    return (point_t) { a.x - b.x, a.y - b.y };
 }
 
 inline std::ostream & operator << (std::ostream & output, flip_t a) { return output << (a == H ? 'H' : 'T'); }

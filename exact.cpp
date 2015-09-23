@@ -83,7 +83,7 @@ private:
             int y = r.y;
             if (not (0 <= y and y < board_size)) return false;
             if (not (0 <= x and x < board_size)) return false;
-            if (used[y][x] or not brd.cell()[y][x]) return false;
+            if (used[y][x] or brd.at((point_t){ x - brd.offset().x, y - brd.offset().y })) return false;
             if (not connected) {
                 connected = (y+1 < board_size and used[y+1][x])
                     or (0 <= y-1 and used[y-1][x])

@@ -5,16 +5,16 @@
 #include <cstdint>
 #include "common.hpp"
 
-template <int N>
-void copy_cell(bool const (& src)[N][N], bool (& dst)[N][N]) {
+template <typename T, int N>
+void copy_cell(T const (& src)[N][N], T (& dst)[N][N]) {
     repeat (y,N) {
         repeat (x,N) {
             dst[y][x] = src[y][x];
         }
     }
 }
-template <int N>
-void copy_cell_rot90(bool const (& src)[N][N], bool (& dst)[N][N]) {
+template <typename T, int N>
+void copy_cell_rot90(T const (& src)[N][N], T (& dst)[N][N]) {
     repeat (y,N) {
         repeat (x,N) {
             // 8×8 のマス全体を時計回りに 90 度，180 度，270 度回転させることができる。
@@ -22,8 +22,8 @@ void copy_cell_rot90(bool const (& src)[N][N], bool (& dst)[N][N]) {
         }
     }
 }
-template <int N>
-void copy_cell_flip(bool const (& src)[N][N], bool (& dst)[N][N]) {
+template <typename T, int N>
+void copy_cell_flip(T const (& src)[N][N], T (& dst)[N][N]) {
     repeat (y,N) {
         repeat (x,N) {
             // > 裏返した後は，与えられたときの配置と左右に反転しているものとする。
@@ -31,8 +31,8 @@ void copy_cell_flip(bool const (& src)[N][N], bool (& dst)[N][N]) {
         }
     }
 }
-template <int N>
-void copy_cell_negate(bool const (& src)[N][N], bool (& dst)[N][N]) {
+template <typename T, int N>
+void copy_cell_negate(T const (& src)[N][N], T (& dst)[N][N]) {
     repeat (y,N) {
         repeat (x,N) {
             dst[y][x] = not src[y][x];
@@ -49,8 +49,8 @@ void shrink_cell_helper(int n, F pred, G update) {
         update(); // shrink
     }
 }
-template <int N>
-void shrink_cell(bool const (& a)[N][N], point_t & offset, point_t & size) {
+template <typename T, int N>
+void shrink_cell(T const (& a)[N][N], point_t & offset, point_t & size) {
     int & x = offset.x;
     int & y = offset.y;
     int & w = size.x;
@@ -60,8 +60,8 @@ void shrink_cell(bool const (& a)[N][N], point_t & offset, point_t & size) {
     shrink_cell_helper(h, [&](int dy){ return a[y+dy ][x+w-1]; }, [&](){         w -= 1; });
     shrink_cell_helper(w, [&](int dx){ return a[y+h-1][x+dx ]; }, [&](){         h -= 1; });
 }
-template <int N>
-int area_cell(bool const (& a)[N][N]) {
+template <typename T, int N>
+int area_cell(T const (& a)[N][N]) {
     int n = 0;
     repeat (y,N) {
         repeat (x,N) {
@@ -72,8 +72,8 @@ int area_cell(bool const (& a)[N][N]) {
     }
     return n;
 }
-template <int N>
-std::vector<point_t> collect_cell(bool const (& a)[N][N], point_t const & offset, point_t const & size) {
+template <typename T, int N>
+std::vector<point_t> collect_cell(T const (& a)[N][N], point_t const & offset, point_t const & size) {
     std::vector<point_t> result;
     repeat (y,size.y) {
         repeat (x,size.x) {
@@ -99,7 +99,9 @@ uint64_t signature_block(bool const (& a)[block_size][block_size], point_t const
     return z;
 }
 
-// 役割: 原点と大きさの概念の吸収
+/**
+ * @brief 役割: 原点と大きさの概念の吸収
+ */
 class board {
 public:
     static constexpr int N = board_size;
@@ -113,13 +115,14 @@ public:
     board(board_t const & a) {
         m_offset = { 0, 0 };
         m_size = { N, N };
-        copy_cell(a.a, m_cell);
-        m_area = area_cell(a.a);
-        shrink_cell(a.a, m_offset, m_size);
+        board_t b;
+        copy_cell_negate(a.a, b.a);
+        m_area = area_cell(b.a);
+        shrink_cell(b.a, m_offset, m_size);
+        copy_cell_negate(b.a, m_cell);
     }
 
 public:
-    bool const (& cell() const) [N][N] { return m_cell; }
     point_t offset() const { return m_offset; }
     point_t size() const { return m_size; }
     bool at(point_t p) const {
@@ -131,7 +134,9 @@ public:
     int h() const { return m_size.y; }
 };
 
-// 役割: 原点と大きさと回転と反転の概念の吸収
+/**
+ * @brief 役割: 原点と大きさと回転と反転の概念の吸収
+ */
 class block {
 public:
     static constexpr int N = block_size;
