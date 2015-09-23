@@ -1,43 +1,31 @@
+#include "exact.hpp"
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include <cassert>
-#ifndef NSIGNAL
-#include <csignal>
-#endif
 #include "procon26.hpp"
 using namespace std;
 
-#ifndef NSIGNAL
-output_t g_result;
-void signal_handler(int param) {
-    cerr << "*** signal " << param << " caught ***" << endl;
-    cerr << g_result;
-    cerr << "***" << endl;
-    exit(param);
-}
-#endif
-
-class solver {
+class exact_solver {
     board brd;
     vector<block> blks;
     vector<placement_t> result;
     vector<int> rest_stone; // rest_stone[i] = max_stone - blks[0 .. i-1].area()
     int highscore; // complement, the area of used blocks
 public:
-    solver() = default;
-
-public:
-    pair<vector<placement_t>, int> solve(input_t const & a) {
+    exact_solver(input_t const & a) {
         int n = a.blocks.size();
         brd = board(a.board);
         blks.resize(n); repeat (i,n) blks[i] = block(a.blocks[i]);
-#ifndef NLOG
-        cerr << "board size: " << brd.size() << endl;
-        cerr << "board area: " << brd.area() << endl;
-        cerr << "blocks number: " << blks.size() << endl;
-        for (auto & blk : blks) cerr << "block size: " << blk.size(H,R0) << endl;
-#endif
+    }
+    exact_solver(board const & a_brd, vector<block> const & a_blks) {
+        brd = a_brd;
+        blks = a_blks;
+    }
+
+public:
+    pair<vector<placement_t>, int> operator () () {
+        int n = blks.size();
         rest_stone.resize(n); {
             int max_stone = 0;
             for (auto blk : blks) max_stone += blk.area();
@@ -48,30 +36,8 @@ public:
         highscore = brd.area();
         vector<placement_t> acc;
         bool used[board_size][board_size] = {};
-#ifndef NSIGNAL
-        signal(SIGINT, &signal_handler);
-#endif
         dfs(acc, brd.area(), used, -1,-1,-1,-1);
-#ifndef NSIGNAL
-        signal(SIGINT, SIG_DFL);
-#endif
-#ifndef NDEBUG
-        if (result.size() < a.blocks.size()) {
-            result.resize(a.blocks.size(), (placement_t){ false });
-        }
-        assert (result.size() == a.blocks.size());
-        assert (acc.size() == 0);
-        repeat (y,board_size) {
-            repeat (x,board_size) {
-                assert (not used[y][x]);
-            }
-        }
-#endif
         return make_pair(result, board_size*board_size - brd.area() - highscore);
-    }
-
-    output_t operator () (input_t const & a) {
-        return { solve(a).first };
     }
 
 private:
@@ -107,22 +73,11 @@ private:
             if (score < highscore) {
                 highscore = score;
                 result = acc;
-#ifndef NLOG
-                cerr << "highscore: " << highscore << endl;
-#endif
-#ifndef NSIGNAL
-                g_result = { result };
-#endif
             }
             return;
         }
         if (highscore <= score - rest_stone[l]) return;
         bool is_first = score == brd.area();
-#ifndef NLOG
-        if (is_first) {
-            cerr << "done: " << acc.size() << " / " << blks.size() << endl;
-        }
-#endif
         block const & blk = blks[l];
         if (is_first) {
             yl = brd.offset().y;
@@ -169,12 +124,14 @@ private:
     }
 };
 
-// まず問題にはならないと思われるが、
-// > (2) 敷き詰めた石の個数（石の個数が少ないチームが上位）
-// であるが得点のみの意味での厳密解であることに注意
-int main() {
-    ios_base::sync_with_stdio(false);
-    input_t a; cin >> a;
-    cout << solver()(a);
-    return 0;
+result_exact_t exact(board const & brd, vector<block> const & blks) {
+    exact_solver f(brd, blks);
+    auto p = f();
+    return (result_exact_t) { p.first, p.second };
+}
+result_exact_t exact(input_t const & a) {
+    int n = a.blocks.size();
+    board brd = board(a.board);
+    vector<block> blks(n); repeat (i,n) blks[i] = block(a.blocks[i]);
+    return exact(brd, blks);
 }
