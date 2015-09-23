@@ -1,5 +1,4 @@
 #include "exact.hpp"
-#include <iostream>
 #include <vector>
 #include <algorithm>
 #include <cassert>
@@ -13,18 +12,13 @@ class exact_solver {
     vector<int> rest_stone; // rest_stone[i] = max_stone - blks[0 .. i-1].area()
     int highscore; // complement, the area of used blocks
 public:
-    exact_solver(input_t const & a) {
-        int n = a.blocks.size();
-        brd = board(a.board);
-        blks.resize(n); repeat (i,n) blks[i] = block(a.blocks[i]);
-    }
     exact_solver(board const & a_brd, vector<block> const & a_blks) {
         brd = a_brd;
         blks = a_blks;
     }
 
 public:
-    pair<vector<placement_t>, int> operator () () {
+    vector<placement_t> operator () () {
         int n = blks.size();
         rest_stone.resize(n); {
             int max_stone = 0;
@@ -47,7 +41,7 @@ public:
         }
 #endif
         result.resize(n, (placement_t){ false });
-        return make_pair(result, board_size*board_size - brd.area() - highscore);
+        return result;
     }
 
 private:
@@ -135,9 +129,7 @@ private:
 };
 
 result_exact_t exact(board const & brd, vector<block> const & blks) {
-    exact_solver f(brd, blks);
-    auto p = f();
-    return (result_exact_t) { p.first, p.second };
+    return (result_exact_t) { exact_solver(brd, blks)() };
 }
 result_exact_t exact(input_t const & a) {
     int n = a.blocks.size();
