@@ -55,20 +55,24 @@ private:
         if (highscore <= score - rest_stone[l]) return;
         block const & blk = blks[l];
         placement_t p = initial_placement(blk, lp);
-        do if (is_puttable(brd, blk, p)) {
-            point_t nlp = p.p + blk.offset(p); // 新たなbounding box
-            point_t nrp = p.p + blk.offset(p) + blk.size(p);
-            if (not brd.is_new()) { // 古いやつと合成
-                nlp = pwmin(nlp, lp);
-                nrp = pwmax(nrp, rp);
+        do {
+            int skip;
+            if (is_puttable(brd, blk, p, &skip)) {
+                point_t nlp = p.p + blk.offset(p); // 新たなbounding box
+                point_t nrp = p.p + blk.offset(p) + blk.size(p);
+                if (not brd.is_new()) { // 古いやつと合成
+                    nlp = pwmin(nlp, lp);
+                    nrp = pwmax(nrp, rp);
+                }
+                put_stone(brd, blk, p, 2+l);
+                brd.update();
+                acc.push_back(p);
+                dfs(score - blk.area(), nlp, nrp);
+                acc.pop_back();
+                put_stone(brd, blk, p, 0);
+                brd.update();
             }
-            put_stone(brd, blk, p, 2+l);
-            brd.update();
-            acc.push_back(p);
-            dfs(score - blk.area(), nlp, nrp);
-            acc.pop_back();
-            put_stone(brd, blk, p, 0);
-            brd.update();
+            p.p.x += skip - 1;
         } while (next_placement(p, blk, lp, rp));
         acc.push_back({ false });
         dfs(score, lp, rp);

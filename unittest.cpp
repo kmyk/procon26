@@ -26,6 +26,11 @@ BOOST_AUTO_TEST_CASE(case_block_1) {
     BOOST_CHECK_EQUAL (b.at(H, R0, b.offset(H, R0) + (point_t) { 0, 1 }), true);
     BOOST_CHECK_EQUAL (b.area(), 5);
     BOOST_CHECK_EQUAL (b.size(H, R90), ((point_t){ 2, 3 }));
+    repeat (i, int(b.stones(H,R0).size())) {
+        if (b.stones(H,R0)[i] == (point_t) { 4, 3 }) {
+            BOOST_CHECK_EQUAL (b.skips(H,R0)[i], 3);
+        }
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
@@ -75,6 +80,7 @@ BOOST_AUTO_TEST_CASE(case_board_1) {
     BOOST_CHECK_EQUAL (b.at(b.offset() + (point_t) { 0, 1 }), false);
     BOOST_CHECK_EQUAL (b.at(b.offset() + (point_t) { 1, 1 }), true);
     BOOST_CHECK_EQUAL (b.area(), 25*12-1);
+    BOOST_CHECK_EQUAL (b.skip({ 0, 4 }), 3);
 }
 
 BOOST_AUTO_TEST_SUITE_END()

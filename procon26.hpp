@@ -77,6 +77,7 @@ private:
     point_t m_size;
     int m_area;
     bool m_is_new;
+    int m_skips[N][N];
 public:
     board();
     board(board_t const & a);
@@ -91,12 +92,11 @@ public:
     void put(point_t p, int value);
     /**
      * @brief areaやis_newを更新
+     * @attention put後 必須
      */
     void update();
-
-private:
     /**
-     * @brief offsetとsizeを更新
+     * @brief offsetとsize等を更新
      */
     void shrink();
 
@@ -121,6 +121,11 @@ public:
      * @brief どこにも石が置かれていないか
      */
     bool is_new() const;
+    /**
+     * @param p in board world
+     * @return どこまでずらしてもだめならはみ出る値が返る
+     */
+    int skip(point_t p) const;
 };
 
 /**
@@ -137,6 +142,7 @@ private:
     int m_area;
     bool m_duplicated[2][4]; // true => you should ignore it
     std::vector<point_t> m_stones[2][4];
+    std::vector<int> m_skips[2][4];
 public:
     block();
     block(block_t const & a);
@@ -168,10 +174,16 @@ public:
      * @return in board world
      */
     std::vector<point_t> stones(placement_t const & p) const;
+    /**
+     * @return その点で障害物と衝突した際、次にx方向にいくらずらせばよいか
+     */
+    std::vector<int> const & skips(flip_t f, rot_t r) const;
 };
 
 bool is_intersect(board const & brd, block const & blk, placement_t const & p);
+bool is_intersect(board const & brd, block const & blk, placement_t const & p, int *skip);
 bool is_puttable(board const & brd, block const & blk, placement_t const & p);
+bool is_puttable(board const & brd, block const & blk, placement_t const & p, int *skip);
 /**
  * @pre 置ける is_puttableが真を返す
  * @attention 何も確認しないことに注意

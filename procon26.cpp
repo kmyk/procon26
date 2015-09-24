@@ -98,19 +98,25 @@ uint64_t signature_block(bool const (& a)[block_size][block_size], point_t const
 
 board::board() = default;
 board::board(board_t const & a) {
+    copy_cell_map(a.a, m_cell, [](bool x) -> int { return x; });
+    shrink();
+    update();
+}
+void board::shrink() {
     m_offset = { 0, 0 };
     m_size = { N, N };
-    copy_cell_map(a.a, m_cell, [](bool x) -> int { return x; });
-    update();
-    shrink();
+    shrink_cell(m_cell, m_offset, m_size, 1);
+    repeat (y,board_size) {
+        m_skips[y][board_size-1] = 1;
+        for (int x = board_size - 2; x >= 0; -- x) {
+            m_skips[y][x] = m_cell[y][x+1] == 0 ? 1 : m_skips[y][x+1] + 1;
+        }
+    }
 }
 void board::update() {
     m_area = area_cell(m_cell, 0);
     int obstacles = area_cell(m_cell, 1);
     m_is_new = (m_area + obstacles == N * N) ? 1 : 0;
-}
-void board::shrink() {
-    shrink_cell(m_cell, m_offset, m_size, 1);
 }
 
 point_t board::offset() const { return m_offset; }
@@ -127,6 +133,7 @@ int board::w() const { return m_size.x; }
 int board::h() const { return m_size.y; }
 void board::put(point_t p, int value) { m_cell[p.y][p.x] = value; }
 bool board::is_new() const { return m_is_new; }
+int board::skip(point_t p) const { return m_skips[p.y][p.x]; }
 
 
 block::block() = default;
@@ -152,6 +159,19 @@ block::block(block_t const & a) {
         for (rot_t r : { R0, R90, R180, R270 }) {
             shrink_cell(m_cell[f][r], m_offset[f][r], m_size[f][r], false);
             m_stones[f][r] = collect_cell(m_cell[f][r], m_offset[f][r], m_size[f][r]);
+        }
+    }
+    for (flip_t f : { H, T }) {
+        for (rot_t r : { R0, R90, R180, R270 }) {
+            m_skips[f][r].resize(m_stones[f][r].size());
+            repeat (i, int(m_stones[f][r].size())) {
+                point_t p = m_stones[f][r][i];
+                m_skips[f][r][i] = 0;
+                while (is_on_board(p) and m_cell[f][r][p.y][p.x]) {
+                    p.x -= 1;
+                    m_skips[f][r][i] += 1;
+                }
+            }
         }
     }
     std::set<uint64_t> sigs;
@@ -186,18 +206,38 @@ std::vector<point_t> block::stones(placement_t const & p) const {
     for (auto && q : qs) q = q + p.p;
     return qs;
 }
+std::vector<int> const & block::skips(flip_t f, rot_t r) const { return m_skips[f][r]; }
 
 
 bool is_intersect(board const & brd, block const & blk, placement_t const & p) {
-    for (auto q : blk.stones(p)) {
-        if (not is_on_board(q)) return true;
-        if (brd.at(q)) return true;
+    return is_intersect(brd, blk, p, nullptr);
+}
+bool is_intersect(board const & brd, block const & blk, placement_t const & p, int *skip) {
+    repeat (i, int(blk.stones(p).size())) {
+        point_t q = blk.stones(p)[i];
+        if (q.y < 0 or board_size <= q.y or board_size <= q.x) {
+            if (skip) *skip = board_size;
+            return true;
+        }
+        if (q.x < 0) {
+            if (skip) *skip = - q.x;
+            return true;
+        }
+        if (brd.at(q)) {
+            if (skip) *skip = std::max(brd.skip(q), blk.skips(p.f,p.r)[i]);
+            return true;
+        }
     }
+    if (skip) *skip = 1;
     return false;
 }
 
 bool is_puttable(board const & brd, block const & blk, placement_t const & p) {
-    if (is_intersect(brd, blk, p)) return false;
+    return is_puttable(brd, blk, p, nullptr);
+}
+
+bool is_puttable(board const & brd, block const & blk, placement_t const & p, int *skip) {
+    if (is_intersect(brd, blk, p, skip)) return false;
     if (brd.is_new()) {
         return true;
     } else {
@@ -234,10 +274,10 @@ placement_t initial_placement(block const & blk, point_t const & lp) {
 }
 bool next_placement(placement_t & p, block const & blk, point_t const & lp, point_t const & rp) {
     p.p.x += 1;
-    if (p.p.x == rp.x + 1 - blk.offset(p.f, p.r).x) {
+    if (p.p.x >= rp.x + 1 - blk.offset(p.f, p.r).x) {
         p.p.x = initial_placement(blk, lp, p.f, p.r).p.x;
         p.p.y += 1;
-        if (p.p.y == rp.y + 1 - blk.offset(p.f, p.r).y) {
+        if (p.p.y >= rp.y + 1 - blk.offset(p.f, p.r).y) {
             p.r = rot90(p.r);
             if (p.r == R0) {
                 p.f = flip(p.f);
