@@ -53,33 +53,22 @@ private:
         }
         if (highscore <= score - rest_stone[l]) return;
         block const & blk = blks[l];
-        for (flip_t f : { H, T }) {
-            for (rot_t r : { R0, R90, R180, R270 }) {
-                if (blk.is_duplicated(f,r)) continue;
-                point_t ofs = lp - blk.size(f,r); // offset
-                repeat_from (y, ofs.y, rp.y + 1) {
-                    repeat_from (x, ofs.x, rp.x + 1) {
-                        point_t ltp = { x, y }; // left-top
-                        placement_t p = { true, ltp - blk.offset(f,r), f, r };
-                        if (is_puttable(brd, blk, p)) {
-                            point_t nlp = blk.offset(p); // 新たなbounding box
-                            point_t nrp = blk.offset(p) + blk.size(p);
-                            if (not brd.is_new()) { // 古いやつと合成
-                                nlp = pwmin(nlp, lp);
-                                nrp = pwmax(nrp, rp);
-                            }
-                            put_stone(brd, blk, p, 2+l);
-                            brd.update();
-                            acc.push_back(p);
-                            dfs(score - blk.area(), nlp, nrp);
-                            acc.pop_back();
-                            put_stone(brd, blk, p, 0);
-                            brd.update();
-                        }
-                    }
-                }
+        placement_t p = initial_placement(blk, lp);
+        do if (is_puttable(brd, blk, p)) {
+            point_t nlp = blk.offset(p); // 新たなbounding box
+            point_t nrp = blk.offset(p) + blk.size(p);
+            if (not brd.is_new()) { // 古いやつと合成
+                nlp = pwmin(nlp, lp);
+                nrp = pwmax(nrp, rp);
             }
-        }
+            put_stone(brd, blk, p, 2+l);
+            brd.update();
+            acc.push_back(p);
+            dfs(score - blk.area(), nlp, nrp);
+            acc.pop_back();
+            put_stone(brd, blk, p, 0);
+            brd.update();
+        } while (next_placement(p, blk, lp, rp));
         acc.push_back({ false });
         dfs(score, lp, rp);
         acc.pop_back();

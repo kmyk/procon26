@@ -225,3 +225,29 @@ void put_stone(board & brd, block const & blk, placement_t const & p, int value)
     for (auto q : blk.stones(p)) brd.put(q, value);
 }
 
+placement_t initial_placement(block const & blk, point_t const & lp, flip_t f, rot_t r) {
+    point_t p = lp - blk.size(f, r) - blk.offset(f, r);
+    return (placement_t) { true, p, f, r };
+}
+placement_t initial_placement(block const & blk, point_t const & lp) {
+    return initial_placement(blk, lp, H, R0);
+}
+bool next_placement(placement_t & p, block const & blk, point_t const & lp, point_t const & rp) {
+    p.p.x += 1;
+    if (p.p.x == rp.x + 1 - blk.offset(p.f, p.r).x) {
+        p.p.x = initial_placement(blk, lp, p.f, p.r).p.x;
+        p.p.y += 1;
+        if (p.p.y == rp.y + 1 - blk.offset(p.f, p.r).y) {
+            p.r = rot90(p.r);
+            if (p.r == R0) {
+                p.f = flip(p.f);
+                if (p.f == H) {
+                    p.p = initial_placement(blk, lp, p.f, p.r).p;
+                    return false;
+                }
+            }
+            p.p = initial_placement(blk, lp, p.f, p.r).p;
+        }
+    }
+    return true;
+}

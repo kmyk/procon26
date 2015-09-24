@@ -182,3 +182,6 @@ bool is_puttable(board const & brd, block const & blk, placement_t const & p);
  *   戻す: 0
  */
 void put_stone(board & brd, block const & blk, placement_t const & p, int value);
+
+placement_t initial_placement(block const & blk, point_t const & lp);
+bool next_placement(placement_t & p, block const & blk, point_t const & lp, point_t const & rp);

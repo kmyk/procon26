@@ -29,6 +29,9 @@ std::istream & operator >> (std::istream & input, input_t & a)  {
 }
 
 
+flip_t flip(flip_t f) {
+    return static_cast<flip_t>((f + 1) % 2);
+}
 rot_t rot90(rot_t r) {
     return static_cast<rot_t>((r + 1) % 4);
 }

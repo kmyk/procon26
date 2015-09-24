@@ -63,36 +63,24 @@ cerr << highscore << endl;
                     next.push_back(npho);
                     npho.used[bix] = true;
                     npho.score -= blk.area();
-// exact.cpp からほぼこぴぺ
-/* BEGIN */
-for (flip_t f : { H, T }) {
-    for (rot_t r : { R0, R90, R180, R270 }) {
-        if (blk.is_duplicated(f,r)) continue;
-        point_t ofs = pho.lp - blk.size(f,r); // offset
-        repeat_from (y, ofs.y, pho.rp.y + 1) {
-            repeat_from (x, ofs.x, pho.rp.x + 1) {
-                point_t ltp = { x, y }; // left-top
-                placement_t p = { true, ltp - blk.offset(f,r), f, r };
-                if (is_puttable(pho.brd, blk, p)) {
-                    npho.lp = blk.offset(p); // 新たなbounding box
-                    npho.rp = blk.offset(p) + blk.size(p);
-                    if (not brd.is_new()) { // 古いやつと合成
-                        npho.lp = pwmin(npho.lp, pho.lp);
-                        npho.rp = pwmax(npho.rp, pho.rp);
-                    }
-                    put_stone(npho.brd, blk, p, 2+bix);
-                    npho.brd.update();
-                    npho.plc[bix] = p;
-                    next.push_back(npho);
-                    put_stone(npho.brd, blk, p, 0);
-                    npho.brd.update();
-                    npho.plc[bix] = { false };
-                }
-            }
-        }
-    }
-}
-/* END */
+                    placement_t p = initial_placement(blk, pho.lp);
+                    do if (is_puttable(brd, blk, p)) {
+                        if (is_puttable(pho.brd, blk, p)) {
+                            npho.lp = blk.offset(p); // 新たなbounding box
+                            npho.rp = blk.offset(p) + blk.size(p);
+                            if (not brd.is_new()) { // 古いやつと合成
+                                npho.lp = pwmin(npho.lp, pho.lp);
+                                npho.rp = pwmax(npho.rp, pho.rp);
+                            }
+                            put_stone(npho.brd, blk, p, 2+bix);
+                            npho.brd.update();
+                            npho.plc[bix] = p;
+                            next.push_back(npho);
+                            put_stone(npho.brd, blk, p, 0);
+                            npho.brd.update();
+                            npho.plc[bix] = { false };
+                        }
+                    } while (next_placement(p, blk, pho.lp, pho.rp));
                 }
             }
             sort(next.rbegin(), next.rend());

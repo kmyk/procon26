@@ -41,6 +41,7 @@ struct output_t {
     std::vector<placement_t> ps;
 };
 
+flip_t flip(flip_t f);
 rot_t rot90(rot_t r);
 bool operator == (point_t const & a, point_t const & b);
 bool operator < (point_t const & a, point_t const & b);
