@@ -28,7 +28,7 @@ struct photon_t {
 };
 
 double evaluate(photon_t const & a) {
-    return - a.circumference - a.score * 20;
+    return - a.circumference - a.score * 100;
 }
 
 // larger iff better
@@ -36,7 +36,7 @@ bool operator < (photon_t const & a, photon_t const & b) {
     return evaluate(a) < evaluate(b);
 }
 
-constexpr int beam_width = 512;
+constexpr int beam_width = 1024;
 
 class forward_solver {
     board brd; // immutable
@@ -63,9 +63,9 @@ public:
             beam.push_back(pho);
         }
 int nthbeam = 0;
+        vector<photon_t> next;
         while (not beam.empty()) {
 cerr << "beam " << (nthbeam ++) << " : " << beam.size() << endl;
-            vector<photon_t> next;
             for (auto const & pho : beam) {
                 if (pho.score < highscore) {
                     highscore = pho.score;
@@ -74,9 +74,9 @@ cerr << "beam " << (nthbeam ++) << " : " << beam.size() << endl;
                 }
                 photon_t npho = pho;
                 while (npho.bix < n and npho.used[npho.bix]) npho.bix += 1;
-                if (pho.bix < n) {
-                    block const & blk = blks[pho.bix];
-                    int bix = npho.bix;
+                int bix = npho.bix;
+                if (bix < n) {
+                    block const & blk = blks[bix];
                     npho.bix += 1;
                     next.push_back(npho);
                     npho.used[bix] = true;
@@ -108,10 +108,11 @@ cerr << "beam " << (nthbeam ++) << " : " << beam.size() << endl;
                         npho.circumference = pho.circumference;
                     } while (next_placement(p, blk, pho.lp, pho.rp));
                 }
+                sort(next.rbegin(), next.rend());
+                if (beam_width < next.size()) next.resize(beam_width);
             }
-            sort(next.rbegin(), next.rend());
-            if (beam_width < next.size()) next.resize(beam_width);
-            beam = next;
+            next.swap(beam);
+            next.clear();
         }
         return result;
     }
