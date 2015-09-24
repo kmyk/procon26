@@ -170,8 +170,8 @@ public:
     std::vector<point_t> stones(placement_t const & p) const;
 };
 
-bool is_intersect(board & brd, block const & blk, placement_t const & p);
-bool is_puttable(board & brd, block const & blk, placement_t const & p);
+bool is_intersect(board const & brd, block const & blk, placement_t const & p);
+bool is_puttable(board const & brd, block const & blk, placement_t const & p);
 /**
  * @pre 置ける is_puttableが真を返す
  * @attention 何も確認しないことに注意

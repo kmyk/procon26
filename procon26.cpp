@@ -188,7 +188,7 @@ std::vector<point_t> block::stones(placement_t const & p) const {
 }
 
 
-bool is_intersect(board & brd, block const & blk, placement_t const & p) {
+bool is_intersect(board const & brd, block const & blk, placement_t const & p) {
     for (auto q : blk.stones(p)) {
         if (not is_on_board(q)) return true;
         if (brd.at(q)) return true;
@@ -196,7 +196,7 @@ bool is_intersect(board & brd, block const & blk, placement_t const & p) {
     return false;
 }
 
-bool is_puttable(board & brd, block const & blk, placement_t const & p) {
+bool is_puttable(board const & brd, block const & blk, placement_t const & p) {
     if (is_intersect(brd, blk, p)) return false;
     if (brd.is_new()) {
         return true;
