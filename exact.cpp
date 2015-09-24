@@ -48,6 +48,7 @@ private:
             if (score < highscore) {
                 highscore = score;
                 result = acc;
+                cerr << highscore << endl;
             }
             return;
         }

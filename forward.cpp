@@ -51,8 +51,8 @@ public:
             for (auto const & pho : beam) {
                 if (pho.score < highscore) {
                     highscore = pho.score;
-cerr << highscore << endl;
                     result = pho.plc;
+                    cerr << highscore << endl;
                 }
                 photon_t npho = pho;
                 while (npho.bix < n and npho.used[npho.bix]) npho.bix += 1;
