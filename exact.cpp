@@ -92,9 +92,3 @@ private:
 result_exact_t exact(board const & brd, vector<block> const & blks) {
     return (result_exact_t) { exact_solver(brd, blks)() };
 }
-result_exact_t exact(input_t const & a) {
-    int n = a.blocks.size();
-    board brd = board(a.board);
-    vector<block> blks(n); repeat (i,n) blks[i] = block(a.blocks[i]);
-    return exact(brd, blks);
-}
