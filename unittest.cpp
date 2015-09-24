@@ -21,9 +21,9 @@ BOOST_AUTO_TEST_CASE(case_block_1) {
     block b(a);
     BOOST_CHECK_EQUAL (b.offset(H, R0), ((point_t){ 2, 2 }));
     BOOST_CHECK_EQUAL (b.size(H, R0), ((point_t){ 3, 2 }));
-    BOOST_CHECK_EQUAL (b.at(H, R0, { 0, 0 }), false);
-    BOOST_CHECK_EQUAL (b.at(H, R0, { 1, 0 }), true);
-    BOOST_CHECK_EQUAL (b.at(H, R0, { 0, 1 }), true);
+    BOOST_CHECK_EQUAL (b.at(H, R0, b.offset(H, R0) + (point_t) { 0, 0 }), false);
+    BOOST_CHECK_EQUAL (b.at(H, R0, b.offset(H, R0) + (point_t) { 1, 0 }), true);
+    BOOST_CHECK_EQUAL (b.at(H, R0, b.offset(H, R0) + (point_t) { 0, 1 }), true);
     BOOST_CHECK_EQUAL (b.area(), 5);
     BOOST_CHECK_EQUAL (b.size(H, R90), ((point_t){ 2, 3 }));
 }
@@ -70,10 +70,10 @@ BOOST_AUTO_TEST_CASE(case_board_1) {
     board b(a);
     BOOST_CHECK_EQUAL (b.offset(), ((point_t){ 3, 4 }));
     BOOST_CHECK_EQUAL (b.size(), ((point_t){ 25, 12 }));
-    BOOST_CHECK_EQUAL (b.at({ 0, 0 }), false);
-    BOOST_CHECK_EQUAL (b.at({ 1, 0 }), false);
-    BOOST_CHECK_EQUAL (b.at({ 0, 1 }), false);
-    BOOST_CHECK_EQUAL (b.at({ 1, 1 }), true);
+    BOOST_CHECK_EQUAL (b.at(b.offset() + (point_t) { 0, 0 }), false);
+    BOOST_CHECK_EQUAL (b.at(b.offset() + (point_t) { 1, 0 }), false);
+    BOOST_CHECK_EQUAL (b.at(b.offset() + (point_t) { 0, 1 }), false);
+    BOOST_CHECK_EQUAL (b.at(b.offset() + (point_t) { 1, 1 }), true);
     BOOST_CHECK_EQUAL (b.area(), 25*12-1);
 }
 

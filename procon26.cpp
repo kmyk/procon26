@@ -72,7 +72,8 @@ std::vector<point_t> collect_cell(T const (& a)[N][N], point_t const & offset, p
     std::vector<point_t> result;
     repeat (y,size.y) {
         repeat (x,size.x) {
-            if (a[offset.y+y][offset.x+x]) result.push_back({ x, y });
+            point_t p = offset + (point_t) { x, y };
+            if (a[p.y][p.x]) result.push_back(p);
         }
     }
     return result;
@@ -100,30 +101,31 @@ board::board(board_t const & a) {
     m_offset = { 0, 0 };
     m_size = { N, N };
     copy_cell_map(a.a, m_cell, [](bool x) -> int { return x; });
+    update();
     shrink();
 }
-void board::shrink() {
+void board::update() {
     m_area = area_cell(m_cell, 0);
     int obstacles = area_cell(m_cell, 1);
     m_is_new = (m_area + obstacles == N * N) ? 1 : 0;
+}
+void board::shrink() {
     shrink_cell(m_cell, m_offset, m_size, 1);
 }
 
 point_t board::offset() const { return m_offset; }
 point_t board::size() const { return m_size; }
-int board::at(point_t p) const {
+int board::at_local(point_t p) const {
     point_t q = offset();
     return m_cell[p.y+q.y][p.x+q.x];
+}
+int board::at(point_t p) const {
+    return m_cell[p.y][p.x];
 }
 int board::area() const { return m_area; }
 int board::w() const { return m_size.x; }
 int board::h() const { return m_size.y; }
-void board::put(point_t p, int n) {
-    point_t q = offset();
-    int & it = m_cell[p.y+q.y][p.x+q.x];
-    // assert (it == 0); // 確認入れたいがわざわざ確認なし版を作るのも面倒
-    it = 2+n;
-}
+void board::put(point_t p, int value) { m_cell[p.y][p.x] = value; }
 bool board::is_new() const { return m_is_new; }
 
 
@@ -171,20 +173,55 @@ int block::w(flip_t f, rot_t r) const { return size(f,r).x; }
 int block::h(flip_t f, rot_t r) const { return size(f,r).y; }
 int block::w(placement_t const & p) const { return w(p.f,p.r); }
 int block::h(placement_t const & p) const { return h(p.f,p.r); }
-point_t block::local(flip_t f, rot_t r, point_t const & q) const {
-    int ay = offset(f,r).y + q.y;
-    int ax = offset(f,r).x + q.x;
-    return { ax, ay };
-}
 bool block::at(flip_t f, rot_t r, point_t p) const {
-    p = local(f,r,p);
     return m_cell[f][r][p.y][p.x];
 }
-point_t block::world(placement_t const & p, point_t const & q) const {
-    assert (p.used);
-    int ay = p.p.y + offset(p.f,p.r).y + q.y;
-    int ax = p.p.x + offset(p.f,p.r).x + q.x;
-    return { ax, ay };
+bool block::at(placement_t const & p, point_t q) const {
+    return at(p.f, p.r, q - p.p);
 }
 bool block::is_duplicated(flip_t f, rot_t r) const { return m_duplicated[f][r]; }
 std::vector<point_t> const & block::stones(flip_t f, rot_t r) const { return m_stones[f][r]; }
+std::vector<point_t> block::stones(placement_t const & p) const {
+    std::vector<point_t> qs = m_stones[p.f][p.r];
+    for (auto && q : qs) q = q + p.p;
+    return qs;
+}
+
+
+bool is_intersect(board & brd, block const & blk, placement_t const & p) {
+    for (auto q : blk.stones(p)) {
+        if (not is_on_board(q)) return true;
+        if (brd.at(q)) return true;
+    }
+    return false;
+}
+
+bool is_puttable(board & brd, block const & blk, placement_t const & p) {
+    if (is_intersect(brd, blk, p)) return false;
+    if (brd.is_new()) {
+        return true;
+    } else {
+        for (auto q : blk.stones(p)) {
+            repeat (i,4) {
+                point_t r = q + dp[i];
+                if (not is_on_board(r)) continue;
+                if (brd.at(r) >= 2) return true; // is a stone
+            }
+        }
+        return false;
+    }
+}
+
+/**
+ * @pre 置ける is_puttableが真を返す
+ * @attention 何も確認しないことに注意
+ * @param brd
+ *   変更される
+ * @param value
+ *   n番目の石を置くと: 2+n
+ *   戻す: 0
+ */
+void put_stone(board & brd, block const & blk, placement_t const & p, int value) {
+    for (auto q : blk.stones(p)) brd.put(q, value);
+}
+

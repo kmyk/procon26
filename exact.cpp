@@ -6,8 +6,9 @@
 using namespace std;
 
 class exact_solver {
-    board brd;
-    vector<block> blks;
+    board brd; /// *MUTABLE*
+    vector<block> blks; // immutable
+    vector<placement_t> acc; // MUTABLE
     vector<placement_t> result;
     vector<int> rest_stone; // rest_stone[i] = max_stone - blks[0 .. i-1].area()
     int highscore; // complement, the area of used blocks
@@ -28,50 +29,21 @@ public:
         }
         result.clear();
         highscore = brd.area();
-        vector<placement_t> acc;
-        bool used[board_size][board_size] = {};
-        dfs(acc, brd.area(), used, -1,-1,-1,-1);
+        dfs(brd.area(), brd.offset(), brd.offset() + brd.size());
 #ifndef NDEBUG
         assert (result.size() <= n);
         assert (acc.size() == 0);
-        repeat (y,board_size) {
-            repeat (x,board_size) {
-                assert (not used[y][x]);
-            }
-        }
 #endif
         result.resize(n, (placement_t){ false });
         return result;
     }
 
 private:
-    bool is_puttable(block const & blk, placement_t const & p, bool const (& used)[board_size][board_size], bool is_first) {
-        bool connected = false;
-        for (auto q : blk.stones(p.f,p.r)) {
-            point_t r = blk.world(p,q);
-            int x = r.x;
-            int y = r.y;
-            if (not (0 <= y and y < board_size)) return false;
-            if (not (0 <= x and x < board_size)) return false;
-            if (used[y][x] or brd.at((point_t){ x - brd.offset().x, y - brd.offset().y })) return false;
-            if (not connected) {
-                connected = (y+1 < board_size and used[y+1][x])
-                    or (0 <= y-1 and used[y-1][x])
-                    or (x+1 < board_size and used[y][x+1])
-                    or (0 <= x-1 and used[y][x-1]);
-            }
-        }
-        if (not is_first and not connected) return false;
-        return true;
-    }
-    void put(block const & blk, placement_t const & p, bool v, bool (& used)[board_size][board_size]) {
-        for (auto q : blk.stones(p.f,p.r)) {
-            point_t r = blk.world(p,q);
-            used[r.y][r.x] = v;
-        }
-    }
-
-    void dfs(vector<placement_t> & acc, int score, bool (& used)[board_size][board_size], int yl, int yr, int xl, int xr) {
+    /**
+     * @param lp
+     * @param rp 既に置いてある石のbounding box
+     */
+    void dfs(int score, point_t lp, point_t rp) {
         int l = acc.size();
         if (l == blks.size()) {
             if (score < highscore) {
@@ -81,49 +53,38 @@ private:
             return;
         }
         if (highscore <= score - rest_stone[l]) return;
-        bool is_first = score == brd.area();
         block const & blk = blks[l];
-        if (is_first) {
-            yl = brd.offset().y;
-            yr = brd.offset().y + brd.h();
-            xl = brd.offset().x;
-            xr = brd.offset().x + brd.w();
-        }
         for (flip_t f : { H, T }) {
             for (rot_t r : { R0, R90, R180, R270 }) {
                 if (blk.is_duplicated(f,r)) continue;
-                //   543210      [w=5]
-                //   [w=5][ ... ])
-                //   ^    ^      ^      => [xl-w, xr]
-                // xl-w   xl    xr
-                repeat_from (y, yl - blk.h(f,r), yr + 1) {
-                    repeat_from (x, xl - blk.w(f,r), xr + 1) {
-                        placement_t p = { true, { x - blk.offset(f,r).x, y - blk.offset(f,r).y }, f, r };
-                        if (is_puttable(blk, p, used, is_first)) {
-                            put(blk, p, true, used);
-                            acc.push_back(p);
-                            point_t q = blk.world(p,{0,0});
-                            point_t s = blk.size(p);
-                            int nyl = q.y;
-                            int nyr = q.y + s.y;
-                            int nxl = q.x;
-                            int nxr = q.x + s.x;
-                            if (not is_first) {
-                                nyl = min(nyl, yl);
-                                nyr = max(nyr, yr);
-                                nxl = min(nxl, xl);
-                                nxr = max(nxr, xr);
+                point_t ofs = lp - blk.size(f,r); // offset
+                repeat_from (y, ofs.y, rp.y + 1) {
+                    repeat_from (x, ofs.x, rp.x + 1) {
+                        point_t ltp = { x, y }; // left-top
+                        placement_t p = { true, ltp - blk.offset(f,r), f, r };
+                        if (is_puttable(brd, blk, p)) {
+                            point_t nlp = blk.offset(p); // 新たなbounding box
+                            point_t nrp = blk.offset(p) + blk.size(p);
+                            if (not brd.is_new()) { // 古いやつと合成
+                                nlp.y = min(nlp.y, lp.y);
+                                nlp.x = min(nlp.x, lp.x);
+                                nrp.y = max(nrp.y, rp.y);
+                                nrp.x = max(nrp.x, rp.x);
                             }
-                            dfs(acc, score-blk.area(), used, nyl, nyr, nxl, nxr);
+                            put_stone(brd, blk, p, 2+l);
+                            brd.update();
+                            acc.push_back(p);
+                            dfs(score - blk.area(), nlp, nrp);
                             acc.pop_back();
-                            put(blk, p, false, used);
+                            put_stone(brd, blk, p, 0);
+                            brd.update();
                         }
                     }
                 }
             }
         }
         acc.push_back({ false });
-        dfs(acc, score, used, yl, yr, xl, xr);
+        dfs(score, lp, rp);
         acc.pop_back();
     }
 };

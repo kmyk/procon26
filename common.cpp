@@ -56,3 +56,11 @@ std::ostream & operator << (std::ostream & output, output_t const & a)  {
     return output;
 }
 std::ostream & operator << (std::ostream & output, point_t const & a) { return output << "(" << a.x << ", " << a.y << ")"; }
+
+bool is_on(point_t const & p, point_t const & size) {
+    return 0 <= p.y and p.y < size.y
+        and 0 <= p.x and p.x < size.x;
+}
+bool is_on_board(point_t const & p) {
+    return is_on(p, (point_t){ board_size, board_size });
+}

@@ -52,3 +52,9 @@ std::ostream & operator << (std::ostream & output, rot_t a) ;
 std::ostream & operator << (std::ostream & output, placement_t a) ;
 std::ostream & operator << (std::ostream & output, output_t const & a) ;
 std::ostream & operator << (std::ostream & output, point_t const & a);
+
+const int dy[5] = { 1, -1, 0, 0, 0 };
+const int dx[5] = { 0, 0, 1, -1, 0 };
+const point_t dp[5] = { { 0, 1 }, { 0, -1 }, { 1, 0 }, { -1, 0 }, { 0, 0 } };
+bool is_on(point_t const & p, point_t const & size);
+bool is_on_board(point_t const & p);

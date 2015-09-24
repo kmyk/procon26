@@ -6,7 +6,66 @@
 #include "common.hpp"
 
 /**
+ * CAUTION: there are *6* coordinates. (YABAI)
+ * + board world
+ *  + board local
+ *   + block + placement world
+ *    + block + placement local
+ * + block world
+ *  + block local
+ */
+
+/**
+ * やばいので整理します
+ */
+
+/**
+ * 以下のようにblockがあったときに、
+ * 00000000
+ * 00111110
+ * 00001000
+ * 00001100
+ * 00000000
+ * 00000000
+ * 00000000
+ * 00000000
+ * (0,0) を 原点とするのが block world 座標系
+ * (2,1) を 原点とするのが block local 座標系
+ */
+
+/**
+ * 以下のようにboardに上で見たblockが配置されているとき
+ * +012345678901234567890
+ * 011111111111111111111111111111111111
+ * 111111111111111111111111111111111111
+ * 211100000000000000000000000001111111
+ * 311100000000000000000000000001111111
+ * 411100000000000000000000000001111111
+ * 511100000010000000000000000001111111
+ * 611100000010100000000000000001111111
+ * 711100000011100000000000000001111111
+ * 811100000010000000000000000001111111
+ * 911100000010000000000000000001111111
+ * 011100000000000000000000000001111111
+ * 111100000000000000000000000001111111
+ * 211100000000000000000000000001111111
+ * 311100000000000000000000000001111111
+ * 411100000000000000000000000001111111
+ * 511111111111111111111111111111111111
+ * 611111111111111111111111111111111111
+ * (0,0) を 原点とするのが board world 座標系
+ * (5,2) を 原点とするのが board local 座標系
+ * (9,5) を 原点とするのが block + placement world 座標系
+ * (8,4) を 原点とするのが block + placement local 座標系
+ */
+
+/**
+ * やばいね
+ */
+
+/**
  * @brief 役割: 原点と大きさの概念と置いた石の情報の吸収
+ * @attention MUTABLE
  */
 class board {
 public:
@@ -21,9 +80,30 @@ private:
 public:
     board();
     board(board_t const & a);
+
+public:
+    /**
+     * @attention 破壊的 無確認
+     * @attention 後続してupdateを呼ぶこと
+     * @param p in board world
+     * @param value 0, 1 or 2+n
+     */
+    void put(point_t p, int value);
+    /**
+     * @brief areaやis_newを更新
+     */
+    void update();
+
+private:
+    /**
+     * @brief offsetとsizeを更新
+     */
     void shrink();
 
 public:
+    /**
+     * @brief (0,0) of board local in board world
+     */
     point_t offset() const;
     point_t size() const;
     /**
@@ -32,14 +112,11 @@ public:
      *   - 1: 障害物
      *   - 2+n: n番目の石
      */
-    int at(point_t p) const;
+    int at_local(point_t p) const; // board local
+    int at(point_t p) const; // board world
     int area() const;
     int w() const;
     int h() const;
-    /**
-     * @attention 破壊的
-     */
-    void put(point_t p, int n);
     /**
      * @brief どこにも石が置かれていないか
      */
@@ -48,6 +125,7 @@ public:
 
 /**
  * @brief 役割: 原点と大きさと回転と反転の概念の吸収
+ * @attention immutable
  */
 class block {
 public:
@@ -73,9 +151,34 @@ public:
     int h(flip_t f, rot_t r) const;
     int w(placement_t const & p) const;
     int h(placement_t const & p) const;
-    point_t local(flip_t f, rot_t r, point_t const & q) const;
+    /**
+     * @param p in block world
+     */
     bool at(flip_t f, rot_t r, point_t p) const;
-    point_t world(placement_t const & p, point_t const & q) const;
+    /**
+     * @param q in board world
+     */
+    bool at(placement_t const & p, point_t q) const;
     bool is_duplicated(flip_t f, rot_t r) const;
+    /**
+     * @return in block world
+     */
     std::vector<point_t> const & stones(flip_t f, rot_t r) const;
+    /**
+     * @return in board world
+     */
+    std::vector<point_t> stones(placement_t const & p) const;
 };
+
+bool is_intersect(board & brd, block const & blk, placement_t const & p);
+bool is_puttable(board & brd, block const & blk, placement_t const & p);
+/**
+ * @pre 置ける is_puttableが真を返す
+ * @attention 何も確認しないことに注意
+ * @param brd
+ *   変更される
+ * @param value
+ *   n番目の石を置くと: 2+n
+ *   戻す: 0
+ */
+void put_stone(board & brd, block const & blk, placement_t const & p, int value);
