@@ -13,13 +13,12 @@ class exact_solver {
     vector<int> rest_stone; // rest_stone[i] = max_stone - blks[0 .. i-1].area()
     int highscore; // complement, the area of used blocks
 public:
-    exact_solver(board const & a_brd, vector<block> const & a_blks) {
-        brd = a_brd;
-        blks = a_blks;
-    }
+    exact_solver() = default;
 
 public:
-    vector<placement_t> operator () () {
+    vector<placement_t> operator () (board const & a_brd, vector<block> const & a_blks) {
+        brd = a_brd;
+        blks = a_blks;
         int n = blks.size();
         rest_stone.resize(n); {
             int max_stone = 0;
@@ -89,6 +88,6 @@ private:
     }
 };
 
-result_exact_t exact(board const & brd, vector<block> const & blks) {
-    return (result_exact_t) { exact_solver(brd, blks)() };
+vector<placement_t> exact(board const & brd, vector<block> const & blks) {
+    return exact_solver()(brd, blks);
 }

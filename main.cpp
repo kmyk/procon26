@@ -10,6 +10,6 @@ int main() {
     int n = a.blocks.size();
     board brd = board(a.board);
     vector<block> blks(n); repeat (i,n) blks[i] = block(a.blocks[i]);
-    cout << (output_t) { exact(brd, blks).placement };
+    cout << (output_t) { exact(brd, blks) };
     return 0;
 }
