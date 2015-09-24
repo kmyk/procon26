@@ -66,8 +66,8 @@ cerr << highscore << endl;
                     placement_t p = initial_placement(blk, pho.lp);
                     do if (is_puttable(brd, blk, p)) {
                         if (is_puttable(pho.brd, blk, p)) {
-                            npho.lp = blk.offset(p); // 新たなbounding box
-                            npho.rp = blk.offset(p) + blk.size(p);
+                            npho.lp = p.p + blk.offset(p); // 新たなbounding box
+                            npho.rp = p.p + blk.offset(p) + blk.size(p);
                             if (not brd.is_new()) { // 古いやつと合成
                                 npho.lp = pwmin(npho.lp, pho.lp);
                                 npho.rp = pwmax(npho.rp, pho.rp);

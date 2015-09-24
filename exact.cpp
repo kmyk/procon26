@@ -55,8 +55,8 @@ private:
         block const & blk = blks[l];
         placement_t p = initial_placement(blk, lp);
         do if (is_puttable(brd, blk, p)) {
-            point_t nlp = blk.offset(p); // 新たなbounding box
-            point_t nrp = blk.offset(p) + blk.size(p);
+            point_t nlp = p.p + blk.offset(p); // 新たなbounding box
+            point_t nrp = p.p + blk.offset(p) + blk.size(p);
             if (not brd.is_new()) { // 古いやつと合成
                 nlp = pwmin(nlp, lp);
                 nrp = pwmax(nrp, rp);
