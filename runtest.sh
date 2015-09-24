@@ -9,8 +9,8 @@ for f in test/*.out ; do
     out=$f
     s=$(cat $out | score $in)
     t=$(cat $in | $bin 2>/dev/null | score $in)
-    if [ $t -lt $s ] ; then
-        echo $in: $t \(\< $s of $out\)
+    if [ $s -lt $t ] ; then
+        echo $in: $s \(\< $t of your $out\)
         returncode=$[$returncode + 1]
     fi
 done
