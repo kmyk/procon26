@@ -47,19 +47,19 @@ public:
     forward_solver() = default;
 
 public:
-    vector<placement_t> operator () (board const & brd, vector<block> const & blks) {
+    vector<placement_t> operator () (board const & a_brd, vector<block> const & blks) {
         int n = blks.size();
-        highscore = brd.area();
+        highscore = a_brd.area();
         vector<photon_t> beam; {
             photon_t pho;
-            pho.brd = brd;
-            pho.score = brd.area();
+            pho.brd = a_brd;
+            pho.score = a_brd.area();
             pho.circumference = 0; // 相対的なもののみ気にする
             pho.plc.resize(n, { false });
             pho.bix = 0;
             pho.used.resize(n);
-            pho.lp = brd.offset();
-            pho.rp = brd.offset() + brd.size();
+            pho.lp = a_brd.offset();
+            pho.rp = a_brd.offset() + a_brd.size();
             beam.push_back(pho);
         }
 int nthbeam = 0;
@@ -85,7 +85,7 @@ cerr << "beam " << (nthbeam ++) << " : " << beam.size() << endl;
                     do if (is_puttable(pho.brd, blk, p)) {
                         npho.lp = p.p + blk.offset(p); // 新たなbounding box
                         npho.rp = p.p + blk.offset(p) + blk.size(p);
-                        if (not brd.is_new()) { // 古いやつと合成
+                        if (not pho.brd.is_new()) { // 古いやつと合成
                             npho.lp = pwmin(npho.lp, pho.lp);
                             npho.rp = pwmax(npho.rp, pho.rp);
                         }
@@ -94,7 +94,7 @@ cerr << "beam " << (nthbeam ++) << " : " << beam.size() << endl;
                                 auto r = q + dp[i];
                                 npho.circumference +=
                                     not is_on_board(r) ? 1 :
-                                    brd.at(q) == 0 ? 1 :
+                                    npho.brd.at(q) == 0 ? 1 :
                                     -1;
                             }
                             npho.brd.put(q, 2+bix);
