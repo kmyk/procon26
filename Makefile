@@ -1,7 +1,8 @@
 .PHONY: all build build/exact build/exact/fast test test/validate
 
-CXXFLAGS = -std=c++14 -Wall
-SRCS = exact.cpp procon26.cpp common.cpp
+SOLVER ?= exact
+CXXFLAGS = -std=c++14 -Wall -DSOLVER=${SOLVER}
+SRCS = forward.cpp exact.cpp procon26.cpp common.cpp
 
 all: build
 
