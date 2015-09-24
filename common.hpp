@@ -58,3 +58,5 @@ const int dx[5] = { 0, 0, 1, -1, 0 };
 const point_t dp[5] = { { 0, 1 }, { 0, -1 }, { 1, 0 }, { -1, 0 }, { 0, 0 } };
 bool is_on(point_t const & p, point_t const & size);
 bool is_on_board(point_t const & p);
+point_t pwmin(point_t const & a, point_t const & b);
+point_t pwmax(point_t const & a, point_t const & b);

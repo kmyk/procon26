@@ -64,3 +64,9 @@ bool is_on(point_t const & p, point_t const & size) {
 bool is_on_board(point_t const & p) {
     return is_on(p, (point_t){ board_size, board_size });
 }
+point_t pwmin(point_t const & a, point_t const & b) {
+    return (point_t) { std::min(a.x, b.x), std::min(a.y, b.y) };
+}
+point_t pwmax(point_t const & a, point_t const & b) {
+    return (point_t) { std::max(a.x, b.x), std::max(a.y, b.y) };
+}

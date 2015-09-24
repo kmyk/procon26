@@ -65,10 +65,8 @@ private:
                             point_t nlp = blk.offset(p); // 新たなbounding box
                             point_t nrp = blk.offset(p) + blk.size(p);
                             if (not brd.is_new()) { // 古いやつと合成
-                                nlp.y = min(nlp.y, lp.y);
-                                nlp.x = min(nlp.x, lp.x);
-                                nrp.y = max(nrp.y, rp.y);
-                                nrp.x = max(nrp.x, rp.x);
+                                nlp = pwmin(nlp, lp);
+                                nrp = pwmax(nrp, rp);
                             }
                             put_stone(brd, blk, p, 2+l);
                             brd.update();
