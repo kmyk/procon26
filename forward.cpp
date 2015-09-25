@@ -83,7 +83,7 @@ int nthbeam = 0;
                     placement_t p = initial_placement(blk, pho.lp);
                     do {
                         int skip;
-                        if (is_puttable(pho.brd, blk, p, &skip)) {
+                        if (pho.brd.is_puttable(blk, p, &skip)) {
                             npho.lp = p.p + blk.offset(p); // 新たなbounding box
                             npho.rp = p.p + blk.offset(p) + blk.size(p);
                             if (not pho.brd.is_new()) { // 古いやつと合成
@@ -103,7 +103,7 @@ int nthbeam = 0;
                             npho.brd.update();
                             npho.plc[bix] = p;
                             next.push_back(npho);
-                            put_stone(npho.brd, blk, p, 0);
+                            npho.brd.put(blk, p, 0);
                             npho.brd.update();
                             npho.plc[bix] = { false };
                             npho.circumference = pho.circumference;

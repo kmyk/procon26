@@ -131,9 +131,65 @@ int board::at(point_t p) const {
 int board::area() const { return m_area; }
 int board::w() const { return m_size.x; }
 int board::h() const { return m_size.y; }
-void board::put(point_t p, int value) { m_cell[p.y][p.x] = value; }
 bool board::is_new() const { return m_is_new; }
 int board::skip(point_t p) const { return m_skips[p.y][p.x]; }
+
+bool board::is_intersect(block const & blk, placement_t const & p) const {
+    return is_intersect(blk, p, nullptr);
+}
+bool board::is_intersect(block const & blk, placement_t const & p, int *skipp) const {
+    repeat (i, int(blk.stones(p).size())) {
+        point_t q = blk.stones(p)[i];
+        if (q.y < 0 or board_size <= q.y or board_size <= q.x) {
+            if (skipp) *skipp = board_size;
+            return true;
+        }
+        if (q.x < 0) {
+            if (skipp) *skipp = - q.x;
+            return true;
+        }
+        if (at(q)) {
+            if (skipp) *skipp = std::max(skip(q), blk.skips(p.f,p.r)[i]);
+            return true;
+        }
+    }
+    if (skipp) *skipp = 1;
+    return false;
+}
+
+bool board::is_puttable(block const & blk, placement_t const & p) const {
+    return is_puttable(blk, p, nullptr);
+}
+
+bool board::is_puttable(block const & blk, placement_t const & p, int *skipp) const {
+    if (is_intersect(blk, p, skipp)) return false;
+    if (is_new()) {
+        return true;
+    } else {
+        for (auto q : blk.stones(p)) {
+            repeat (i,4) {
+                point_t r = q + dp[i];
+                if (not is_on_board(r)) continue;
+                if (at(r) >= 2) return true; // is a stone
+            }
+        }
+        return false;
+    }
+}
+
+void board::put(point_t p, int value) {
+    m_cell[p.y][p.x] = value;
+}
+/**
+ * @pre 置ける is_puttableが真を返す
+ * @attention 何も確認しないことに注意
+ * @param value
+ *   n番目の石を置くと: 2+n
+ *   戻す: 0
+ */
+void board::put(block const & blk, placement_t const & p, int value) {
+    for (auto q : blk.stones(p)) put(q, value);
+}
 
 
 block::block() = default;
@@ -208,62 +264,6 @@ std::vector<point_t> block::stones(placement_t const & p) const {
 }
 std::vector<int> const & block::skips(flip_t f, rot_t r) const { return m_skips[f][r]; }
 
-
-bool is_intersect(board const & brd, block const & blk, placement_t const & p) {
-    return is_intersect(brd, blk, p, nullptr);
-}
-bool is_intersect(board const & brd, block const & blk, placement_t const & p, int *skip) {
-    repeat (i, int(blk.stones(p).size())) {
-        point_t q = blk.stones(p)[i];
-        if (q.y < 0 or board_size <= q.y or board_size <= q.x) {
-            if (skip) *skip = board_size;
-            return true;
-        }
-        if (q.x < 0) {
-            if (skip) *skip = - q.x;
-            return true;
-        }
-        if (brd.at(q)) {
-            if (skip) *skip = std::max(brd.skip(q), blk.skips(p.f,p.r)[i]);
-            return true;
-        }
-    }
-    if (skip) *skip = 1;
-    return false;
-}
-
-bool is_puttable(board const & brd, block const & blk, placement_t const & p) {
-    return is_puttable(brd, blk, p, nullptr);
-}
-
-bool is_puttable(board const & brd, block const & blk, placement_t const & p, int *skip) {
-    if (is_intersect(brd, blk, p, skip)) return false;
-    if (brd.is_new()) {
-        return true;
-    } else {
-        for (auto q : blk.stones(p)) {
-            repeat (i,4) {
-                point_t r = q + dp[i];
-                if (not is_on_board(r)) continue;
-                if (brd.at(r) >= 2) return true; // is a stone
-            }
-        }
-        return false;
-    }
-}
-
-/**
- * @pre 置ける is_puttableが真を返す
- * @attention 何も確認しないことに注意
- * @param brd
- *   変更される
- * @param value
- *   n番目の石を置くと: 2+n
- *   戻す: 0
- */
-void put_stone(board & brd, block const & blk, placement_t const & p, int value) {
-    for (auto q : blk.stones(p)) brd.put(q, value);
-}
 
 placement_t initial_placement(block const & blk, point_t const & lp, flip_t f, rot_t r) {
     point_t p = lp - blk.size(f, r) - blk.offset(f, r);

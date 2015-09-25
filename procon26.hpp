@@ -63,6 +63,10 @@
  * やばいね
  */
 
+
+class board;
+class block;
+
 /**
  * @brief 役割: 原点と大きさの概念と置いた石の情報の吸収
  * @attention MUTABLE
@@ -78,11 +82,16 @@ private:
     int m_area;
     bool m_is_new;
     int m_skips[N][N];
+
 public:
     board();
     board(board_t const & a);
 
 public:
+    bool is_intersect(block const & blk, placement_t const & p) const;
+    bool is_intersect(block const & blk, placement_t const & p, int *skip) const;
+    bool is_puttable(block const & blk, placement_t const & p) const;
+    bool is_puttable(block const & blk, placement_t const & p, int *skip) const;
     /**
      * @attention 破壊的 無確認
      * @attention 後続してupdateを呼ぶこと
@@ -90,6 +99,7 @@ public:
      * @param value 0, 1 or 2+n
      */
     void put(point_t p, int value);
+    void put(block const & blk, placement_t const & p, int value);
     /**
      * @brief areaやis_newを更新
      * @attention put後 必須
