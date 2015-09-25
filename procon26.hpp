@@ -109,6 +109,7 @@ public:
      * @brief offsetとsize等を更新
      */
     void shrink();
+    std::vector<board> split() const;
 
 public:
     /**

@@ -1,4 +1,5 @@
 #include "procon26.hpp"
+#include <stack>
 
 template <typename T, int N>
 void copy_cell(T const (& src)[N][N], T (& dst)[N][N]) {
@@ -189,6 +190,40 @@ void board::put(point_t p, int value) {
  */
 void board::put(block const & blk, placement_t const & p, int value) {
     for (auto q : blk.stones(p)) put(q, value);
+}
+
+std::vector<board> board::split() const {
+    std::vector<board> result;
+    bool used[board_size][board_size] = {};
+    repeat_from (y, offset().y, offset().y+size().y) {
+        repeat_from (x, offset().x, offset().x+size().x) {
+            if (m_cell[y][x] == 0 and not used[y][x]) {
+                board brd;
+                copy_cell_map(m_cell, brd.m_cell, [](int x) -> int { return std::max(1, x); });
+                std::stack<point_t> stk;
+                stk.push({ x, y });
+                while (not stk.empty()) {
+                    point_t p = stk.top(); stk.pop();
+                    if (used[p.y][p.x]) continue;
+                    used[p.y][p.x] = true;
+                    brd.m_cell[p.y][p.x] = 0;
+                    repeat (i,4) {
+                        int ny = p.y + dy[i];
+                        int nx = p.x + dx[i];
+                        if (not is_on_board({ nx, ny })) continue;
+                        if (m_cell[ny][nx] == 0 and not used[ny][nx]) {
+                            stk.push({ nx, ny });
+                        }
+                    }
+                }
+                brd.shrink();
+                brd.update();
+                result.push_back(brd);
+            }
+            x += m_skips[y][x] - 1;
+        }
+    }
+    return result;
 }
 
 
