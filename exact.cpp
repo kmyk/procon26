@@ -53,6 +53,7 @@ private:
             return;
         }
         if (highscore <= score - rest_stone[l]) return;
+        brd.shrink();
         block const & blk = blks[l];
         placement_t p = initial_placement(blk, lp);
         do {
