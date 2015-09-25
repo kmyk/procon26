@@ -28,7 +28,7 @@ struct photon_t {
 };
 
 double evaluate(photon_t const & a) {
-    return - a.circumference - a.score * 100;
+    return - a.circumference - a.score * 64;
 }
 
 // larger iff better
@@ -65,7 +65,6 @@ public:
 int nthbeam = 0;
         vector<photon_t> next;
         while (not beam.empty()) {
-cerr << "beam " << (nthbeam ++) << " : " << beam.size() << endl;
             for (auto const & pho : beam) {
                 if (pho.score < highscore) {
                     highscore = pho.score;
@@ -82,37 +81,47 @@ cerr << "beam " << (nthbeam ++) << " : " << beam.size() << endl;
                     npho.used[bix] = true;
                     npho.score -= blk.area();
                     placement_t p = initial_placement(blk, pho.lp);
-                    do if (is_puttable(pho.brd, blk, p)) {
-                        npho.lp = p.p + blk.offset(p); // 新たなbounding box
-                        npho.rp = p.p + blk.offset(p) + blk.size(p);
-                        if (not pho.brd.is_new()) { // 古いやつと合成
-                            npho.lp = pwmin(npho.lp, pho.lp);
-                            npho.rp = pwmax(npho.rp, pho.rp);
-                        }
-                        for (auto q : blk.stones(p)) {
-                            repeat (i,4) {
-                                auto r = q + dp[i];
-                                npho.circumference +=
-                                    not is_on_board(r) ? 1 :
-                                    npho.brd.at(q) == 0 ? 1 :
-                                    -1;
+                    do {
+                        int skip;
+                        if (is_puttable(pho.brd, blk, p, &skip)) {
+                            npho.lp = p.p + blk.offset(p); // 新たなbounding box
+                            npho.rp = p.p + blk.offset(p) + blk.size(p);
+                            if (not pho.brd.is_new()) { // 古いやつと合成
+                                npho.lp = pwmin(npho.lp, pho.lp);
+                                npho.rp = pwmax(npho.rp, pho.rp);
                             }
-                            npho.brd.put(q, 2+bix);
+                            for (auto q : blk.stones(p)) {
+                                repeat (i,4) {
+                                    auto r = q + dp[i];
+                                    npho.circumference +=
+                                        not is_on_board(r) ? 1 :
+                                        npho.brd.at(q) == 0 ? 1 :
+                                        -1;
+                                }
+                                npho.brd.put(q, 2+bix);
+                            }
+                            npho.brd.update();
+                            npho.plc[bix] = p;
+                            next.push_back(npho);
+                            put_stone(npho.brd, blk, p, 0);
+                            npho.brd.update();
+                            npho.plc[bix] = { false };
+                            npho.circumference = pho.circumference;
                         }
-                        npho.brd.update();
-                        npho.plc[bix] = p;
-                        next.push_back(npho);
-                        put_stone(npho.brd, blk, p, 0);
-                        npho.brd.update();
-                        npho.plc[bix] = { false };
-                        npho.circumference = pho.circumference;
+                        p.p.x += skip - 1;
                     } while (next_placement(p, blk, pho.lp, pho.rp));
                 }
-                sort(next.rbegin(), next.rend());
-                if (beam_width < next.size()) next.resize(beam_width);
+                if (beam_width * 10 < next.size()) {
+                    sort(next.rbegin(), next.rend());
+                    next.resize(beam_width);
+                }
             }
+            sort(next.rbegin(), next.rend());
+            if (beam_width < next.size()) next.resize(beam_width);
+            for (auto && pho : next) pho.brd.shrink();
             next.swap(beam);
             next.clear();
+cerr << "beam " << (nthbeam ++) << " : " << beam.size() << endl;
         }
         return result;
     }
