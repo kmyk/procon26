@@ -207,3 +207,5 @@ void put_stone(board & brd, block const & blk, placement_t const & p, int value)
 
 placement_t initial_placement(block const & blk, point_t const & lp);
 bool next_placement(placement_t & p, block const & blk, point_t const & lp, point_t const & rp);
+
+void update_bounding_box(board const & brd, block const & blk, placement_t const & p, point_t const & lp, point_t const & rp, point_t *nlp, point_t *nrp);

@@ -84,12 +84,7 @@ int nthbeam = 0;
                     do {
                         int skip;
                         if (pho.brd.is_puttable(blk, p, &skip)) {
-                            npho.lp = p.p + blk.offset(p); // 新たなbounding box
-                            npho.rp = p.p + blk.offset(p) + blk.size(p);
-                            if (not pho.brd.is_new()) { // 古いやつと合成
-                                npho.lp = pwmin(npho.lp, pho.lp);
-                                npho.rp = pwmax(npho.rp, pho.rp);
-                            }
+                            update_bounding_box(pho.brd, blk, p, pho.lp, pho.rp, &npho.lp, &npho.rp);
                             for (auto q : blk.stones(p)) {
                                 repeat (i,4) {
                                     auto r = q + dp[i];
