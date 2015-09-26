@@ -17,14 +17,14 @@ using namespace std;
  */
 
 struct photon_t {
-    board brd;
+    vector<board> brds;
     int score;
     int circumference;
     vector<placement_t> plc;
     int bix; // current block
-    vector<bool> used; // are blocks used
-    point_t lp;
-    point_t rp; // bounding box
+    // TODO: boardに持たせる
+    // point_t lp;
+    // point_t rp; // bounding box
 };
 
 double evaluate(photon_t const & a) {
@@ -50,16 +50,16 @@ public:
     vector<placement_t> operator () (board const & a_brd, vector<block> const & blks) {
         int n = blks.size();
         highscore = a_brd.area();
-        vector<photon_t> beam; {
+        vector<photon_t> beam;
+        for (auto && brd : a_brd.split()) {
             photon_t pho;
-            pho.brd = a_brd;
+            pho.brds.push_back(brd);
             pho.score = a_brd.area();
             pho.circumference = 0; // 相対的なもののみ気にする
             pho.plc.resize(n, { false });
             pho.bix = 0;
-            pho.used.resize(n);
-            pho.lp = a_brd.offset();
-            pho.rp = a_brd.offset() + a_brd.size();
+            // pho.lp = a_brd.offset();
+            // pho.rp = a_brd.offset() + a_brd.size();
             beam.push_back(pho);
         }
 int nthbeam = 0;
@@ -71,40 +71,49 @@ int nthbeam = 0;
                     result = pho.plc;
                     cerr << highscore << endl;
                 }
-                photon_t npho = pho;
-                while (npho.bix < n and npho.used[npho.bix]) npho.bix += 1;
-                int bix = npho.bix;
+                int bix = pho.bix;
+                while (bix < n and pho.plc[bix].used) bix += 1;
                 if (bix < n) {
                     block const & blk = blks[bix];
-                    npho.bix += 1;
-                    next.push_back(npho);
-                    npho.used[bix] = true;
-                    npho.score -= blk.area();
-                    placement_t p = initial_placement(blk, pho.lp);
-                    do {
-                        int skip;
-                        if (pho.brd.is_puttable(blk, p, &skip)) {
-                            update_bounding_box(pho.brd, blk, p, pho.lp, pho.rp, &npho.lp, &npho.rp);
-                            for (auto q : blk.stones(p)) {
-                                repeat (i,4) {
-                                    auto r = q + dp[i];
-                                    npho.circumference +=
-                                        not is_on_board(r) ? 1 :
-                                        npho.brd.at(q) == 0 ? 1 :
-                                        -1;
+                    {
+                        photon_t npho = pho;
+                        npho.bix = bix + 1;
+                        next.push_back(npho);
+                    }
+                    int l = pho.brds.size();
+                    repeat (bjx, l) {
+                        board const & brd = pho.brds[bjx];
+                        placement_t p = initial_placement(blk, /* pho.lp */ { 0, 0 });
+                        do {
+                            int skip;
+                            if (brd.is_puttable(blk, p, &skip)) {
+                                photon_t npho = pho;
+                                npho.plc[bix] = p;
+                                npho.bix = bix + 1;
+                                npho.score -= blk.area();
+                                // update_bounding_box(brd, blk, p, pho.lp, pho.rp, &npho.lp, &npho.rp);
+                                board nbrd = brd;
+                                for (auto q : blk.stones(p)) {
+                                    repeat (i,4) {
+                                        auto r = q + dp[i];
+                                        npho.circumference +=
+                                            not is_on_board(r) ? 1 :
+                                            nbrd.at(q) == 0 ? 1 :
+                                            -1;
+                                    }
+                                    nbrd.put(q, 2+bix);
                                 }
-                                npho.brd.put(q, 2+bix);
+                                nbrd.update();
+                                if (bjx != l - 1) npho.brds[bjx] = npho.brds[l - 1];
+                                npho.brds.pop_back();
+                                for (auto && it : nbrd.split()) {
+                                    npho.brds.push_back(it);
+                                }
+                                next.push_back(npho);
                             }
-                            npho.brd.update();
-                            npho.plc[bix] = p;
-                            next.push_back(npho);
-                            npho.brd.put(blk, p, 0);
-                            npho.brd.update();
-                            npho.plc[bix] = { false };
-                            npho.circumference = pho.circumference;
-                        }
-                        p.p.x += skip - 1;
-                    } while (next_placement(p, blk, pho.lp, pho.rp));
+                            p.p.x += skip - 1;
+                        } while (next_placement(p, blk, /* pho.lp, pho.rp */ { 0, 0 }, { board_size, board_size }));
+                    }
                 }
                 if (beam_width * 10 < next.size()) {
                     sort(next.rbegin(), next.rend());
@@ -113,7 +122,7 @@ int nthbeam = 0;
             }
             sort(next.rbegin(), next.rend());
             if (beam_width < next.size()) next.resize(beam_width);
-            for (auto && pho : next) pho.brd.shrink();
+            // for (auto && pho : next) pho.brd.shrink(); // split internally calls shrink
             next.swap(beam);
             next.clear();
 cerr << "beam " << (nthbeam ++) << " : " << beam.size() << endl;
