@@ -85,7 +85,7 @@ private:
 
 public:
     board();
-    board(board_t const & a);
+    explicit board(board_t const & a);
 
 public:
     bool is_intersect(block const & blk, placement_t const & p) const;
@@ -156,7 +156,7 @@ private:
     std::vector<int> m_skips[2][4];
 public:
     block();
-    block(block_t const & a);
+    explicit block(block_t const & a);
 
 public:
     point_t offset(flip_t f, rot_t r) const;
