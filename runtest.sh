@@ -5,12 +5,13 @@ score() {
 }
 returncode=0
 for f in test/*.out ; do
-    in=${f%%.out}.in
+    echo ${f%.out}
+    in=${f%.out}.in
     out=$f
     s=$(cat $out | score $in)
     t=$(cat $in | $bin 2>/dev/null | score $in)
     if [ $s -lt $t ] ; then
-        echo $in: $s \(\< $t of your $out\)
+        echo $in: $t \(\> $s\)
         returncode=$[$returncode + 1]
     fi
 done
