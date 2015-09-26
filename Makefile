@@ -1,8 +1,11 @@
 .PHONY: all build build/exact build/exact/fast test test/validate
 
 SOLVER ?= exact
-CXXFLAGS = -std=c++14 -Wall -DSOLVER=${SOLVER}
+CXXFLAGS = -std=c++14 -Wall -DSOLVER=${SOLVER} -DUSE_$(shell echo ${SOLVER} | tr a-z A-Z)
 SRCS = forward.cpp exact.cpp procon26.cpp common.cpp
+ifdef DEBUG
+    CXXFLAGS += -g -DDEBUG -D_GLIBCXX_DEBUG
+endif
 
 all: build
 

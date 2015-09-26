@@ -28,7 +28,7 @@ public:
         }
         result.clear();
         highscore = brd.area();
-        dfs(brd.area(), brd.offset(), brd.offset() + brd.size());
+        dfs(brd.area() /* , brd.offset(), brd.offset() + brd.size() */);
 #ifndef NDEBUG
         assert (result.size() <= n);
         assert (acc.size() == 0);
@@ -42,37 +42,39 @@ private:
      * @param lp
      * @param rp 既に置いてある石のbounding box
      */
-    void dfs(int score, point_t lp, point_t rp) {
+    void dfs(int score /* , point_t lp, point_t rp */) {
         int l = acc.size();
         if (l == blks.size()) {
             if (score < highscore) {
                 highscore = score;
                 result = acc;
+#ifdef USE_EXACT
                 cerr << highscore << endl;
+#endif
             }
             return;
         }
         if (highscore <= score - rest_stone[l]) return;
         brd.shrink();
         block const & blk = blks[l];
-        placement_t p = initial_placement(blk, lp);
+        placement_t p = initial_placement(blk, /* lp */ { 0, 0 });
         do {
             int skip;
             if (brd.is_puttable(blk, p, &skip)) {
-                point_t nlp, nrp;
-                update_bounding_box(brd, blk, p, lp, rp, &nlp, &nrp);
+                // point_t nlp, nrp;
+                // update_bounding_box(brd, blk, p, lp, rp, &nlp, &nrp);
                 brd.put(blk, p, 2+l);
                 brd.update();
                 acc.push_back(p);
-                dfs(score - blk.area(), nlp, nrp);
+                dfs(score - blk.area() /* , nlp, nrp */);
                 acc.pop_back();
                 brd.put(blk, p, 0);
                 brd.update();
             }
             p.p.x += skip - 1;
-        } while (next_placement(p, blk, lp, rp));
+        } while (next_placement(p, blk, /* lp, rp */ { 0, 0 }, { board_size, board_size }));
         acc.push_back({ false });
-        dfs(score, lp, rp);
+        dfs(score /* , lp, rp */);
         acc.pop_back();
     }
 };

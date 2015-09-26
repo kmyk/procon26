@@ -4,6 +4,7 @@
 #include <set>
 #include <cassert>
 #include "procon26.hpp"
+#include "exact.hpp"
 using namespace std;
 
 /**
@@ -20,6 +21,7 @@ struct photon_t {
     vector<board> brds;
     int score;
     int circumference;
+    int dead_area;
     vector<placement_t> plc;
     int bix; // current block
     // TODO: boardに持たせる
@@ -37,6 +39,35 @@ bool operator < (photon_t const & a, photon_t const & b) {
 }
 
 constexpr int beam_width = 1024;
+constexpr int exact_limit = 18;
+
+void exact(photon_t & pho, board brd, vector<block> const & blks) {
+    vector<block> xs;
+    repeat_from (i, pho.bix, blks.size()) if (not pho.plc[i].used) {
+        xs.push_back(blks[i]);
+    }
+    if (xs.empty()) return;
+    vector<placement_t> ys = exact(brd, xs);
+    int j = 0;
+    repeat_from (i, pho.bix, blks.size()) if (not pho.plc[i].used) {
+        placement_t const & p = ys[j ++];
+        pho.plc[i] = p;
+        block const & blk = blks[i];
+        pho.score -= blk.area();
+        for (auto q : blk.stones(p)) {
+            repeat (i,4) {
+                auto r = q + dp[i];
+                pho.circumference +=
+                    not is_on_board(r) ? 1 :
+                    brd.at(q) == 0 ? 1 :
+                    -1;
+            }
+            brd.put(q, 2+i);
+        }
+    }
+    brd.update();
+    pho.dead_area += brd.area();
+}
 
 class forward_solver {
     board brd; // immutable
@@ -56,6 +87,7 @@ public:
             pho.brds.push_back(brd);
             pho.score = a_brd.area();
             pho.circumference = 0; // 相対的なもののみ気にする
+            pho.dead_area = a_brd.area() - brd.area();
             pho.plc.resize(n, { false });
             pho.bix = 0;
             // pho.lp = a_brd.offset();
@@ -69,7 +101,9 @@ int nthbeam = 0;
                 if (pho.score < highscore) {
                     highscore = pho.score;
                     result = pho.plc;
+#ifdef USE_FORWARD
                     cerr << highscore << endl;
+#endif
                 }
                 int bix = pho.bix;
                 while (bix < n and pho.plc[bix].used) bix += 1;
@@ -107,7 +141,11 @@ int nthbeam = 0;
                                 if (bjx != l - 1) npho.brds[bjx] = npho.brds[l - 1];
                                 npho.brds.pop_back();
                                 for (auto && it : nbrd.split()) {
-                                    npho.brds.push_back(it);
+                                    if (it.area() <= exact_limit) {
+                                        exact(npho, it, blks);
+                                    } else {
+                                        npho.brds.push_back(it);
+                                    }
                                 }
                                 next.push_back(npho);
                             }
