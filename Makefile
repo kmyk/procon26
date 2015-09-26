@@ -1,4 +1,4 @@
-.PHONY: all build build/exact build/exact/fast test test/validate
+.PHONY: all build build/fast test test/validate
 
 SOLVER ?= exact
 CXXFLAGS = -std=c++14 -Wall -DSOLVER=${SOLVER} -DUSE_$(shell echo ${SOLVER} | tr a-z A-Z)
@@ -9,12 +9,10 @@ endif
 
 all: build
 
-build: build/exact
-
-build/exact:
+build:
 	${CXX} ${CXXFLAGS} -g -O2 ${SRCS} main.cpp
 
-build/exact/fast:
+build/fast:
 	${CXX} ${CXXFLAGS} -O3 -DNDEBUG ${SRCS} main.cpp
 
 build/unittest:
@@ -22,14 +20,14 @@ build/unittest:
 
 test:
 	make test/unittest
-	make test/exact
+	make test/solver
 
 test/unittest:
 	make build/unittest
 	./a.out
 
-test/exact:
-	make build/exact
+test/solver:
+	make build
 	./runtest.sh ./a.out
 	# bash -c 'for f in test/*.in ; do f="$$(echo $$f | sed -e 's/\.in$$//')" ; echo $$f ; cat $$f.in | ./a.out | ./validator.py -i $$f.in ; done'
 
