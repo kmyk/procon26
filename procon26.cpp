@@ -1,5 +1,6 @@
 #include "procon26.hpp"
 #include <stack>
+#include <algorithm>
 
 template <typename T, int N>
 void copy_cell(T const (& src)[N][N], T (& dst)[N][N]) {
@@ -250,6 +251,10 @@ block::block(block_t const & a) {
         for (rot_t r : { R0, R90, R180, R270 }) {
             shrink_cell(m_cell[f][r], m_offset[f][r], m_size[f][r], false);
             m_stones[f][r] = collect_cell(m_cell[f][r], m_offset[f][r], m_size[f][r]);
+            // skipが効きやすく
+            std::sort(m_stones[f][r].begin(), m_stones[f][r].end(), [](point_t const & a, point_t const & b) {
+                return std::make_pair(- a.x, - a.y) < std::make_pair(- b.x, - b.y);
+            });
         }
     }
     for (flip_t f : { H, T }) {
