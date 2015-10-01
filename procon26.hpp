@@ -111,6 +111,7 @@ public:
      * @brief offsetとsize等を更新
      */
     void shrink();
+    [[deprecated]]
     std::vector<board> split() const;
 
 public:
@@ -189,6 +190,7 @@ public:
     /**
      * @return in board world
      */
+    [[deprecated]]
     std::vector<point_t> stones(placement_t const & p) const;
     /**
      * @return その点で障害物と衝突した際、次にx方向にいくらずらせばよいか
