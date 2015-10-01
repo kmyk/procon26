@@ -17,7 +17,6 @@ public:
 
 public:
     vector<placement_t> operator () (board const & a_brd, vector<block> const & a_blks) {
-        brd = a_brd;
         blks = a_blks;
         int n = blks.size();
         rest_stone.resize(n); {
@@ -27,8 +26,11 @@ public:
             repeat_from (i,0,n-1) rest_stone[i+1] = rest_stone[i] - blks[i].area();
         }
         result.clear();
-        highscore = brd.area();
-        dfs(brd.area());
+        highscore = a_brd.area();
+        for (auto b_brd : a_brd.split()) {
+            brd = b_brd;
+            dfs(a_brd.area());
+        }
 #ifndef NDEBUG
         assert (result.size() <= n);
         assert (acc.size() == 0);
@@ -38,11 +40,7 @@ public:
     }
 
 private:
-    /**
-     * @param lp
-     * @param rp 既に置いてある石のbounding box
-     */
-    void dfs(int score /* , point_t lp, point_t rp */) {
+    void dfs(int score) {
         int l = acc.size();
         if (l == blks.size()) {
             if (score < highscore) {
@@ -57,22 +55,20 @@ private:
         if (highscore <= score - rest_stone[l]) return;
         brd.shrink();
         block const & blk = blks[l];
-        placement_t p = initial_placement(blk, brd.offset());
+        placement_t p = initial_placement(blk, brd.stone_offset());
         do {
             int skip;
             if (brd.is_puttable(blk, p, &skip)) {
-                // point_t nlp, nrp;
-                // update_bounding_box(brd, blk, p, lp, rp, &nlp, &nrp);
                 brd.put(blk, p, 2+l);
                 brd.update();
                 acc.push_back(p);
-                dfs(score - blk.area() /* , nlp, nrp */);
+                dfs(score - blk.area());
                 acc.pop_back();
                 brd.put(blk, p, 0);
                 brd.update();
             }
             p.p.x += skip - 1;
-        } while (next_placement(p, blk, brd.offset(), brd.offset() + brd.size()));
+        } while (next_placement(p, blk, brd.stone_offset(), brd.stone_offset() + brd.stone_size()));
         acc.push_back({ false });
         dfs(score);
         acc.pop_back();

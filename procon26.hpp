@@ -80,7 +80,9 @@ private:
     point_t m_offset;
     point_t m_size;
     int m_area;
-    bool m_is_new;
+    point_t m_stone_offset;
+    point_t m_stone_size;
+    int m_stone_area;
     int m_skips[N][N];
 
 public:
@@ -117,6 +119,8 @@ public:
      */
     point_t offset() const;
     point_t size() const;
+    point_t stone_offset() const;
+    point_t stone_size() const;
     /**
      * @return
      *   - 0: 何も置かれていない
@@ -126,6 +130,7 @@ public:
     int at_local(point_t p) const; // board local
     int at(point_t p) const; // board world
     int area() const;
+    int stone_area() const;
     int w() const;
     int h() const;
     /**

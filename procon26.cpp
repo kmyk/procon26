@@ -46,16 +46,20 @@ void shrink_cell_helper(int n, F pred, G update) {
         update(); // shrink
     }
 }
-template <typename T, int N>
-void shrink_cell(T const (& a)[N][N], point_t & offset, point_t & size, T target) {
+template <typename T, int N, typename F>
+void shrink_cell(T const (& a)[N][N], point_t & offset, point_t & size, F pred) {
     int & x = offset.x;
     int & y = offset.y;
     int & w = size.x;
     int & h = size.y;
-    shrink_cell_helper(h, [&](int dy){ return a[y+dy ][x    ] != target; }, [&](){ x += 1; w -= 1; });
-    shrink_cell_helper(w, [&](int dx){ return a[y    ][x+dx ] != target; }, [&](){ y += 1; h -= 1; });
-    shrink_cell_helper(h, [&](int dy){ return a[y+dy ][x+w-1] != target; }, [&](){         w -= 1; });
-    shrink_cell_helper(w, [&](int dx){ return a[y+h-1][x+dx ] != target; }, [&](){         h -= 1; });
+    shrink_cell_helper(h, [&](int dy){ return pred(a[y+dy ][x    ]); }, [&](){ x += 1; w -= 1; });
+    shrink_cell_helper(w, [&](int dx){ return pred(a[y    ][x+dx ]); }, [&](){ y += 1; h -= 1; });
+    shrink_cell_helper(h, [&](int dy){ return pred(a[y+dy ][x+w-1]); }, [&](){         w -= 1; });
+    shrink_cell_helper(w, [&](int dx){ return pred(a[y+h-1][x+dx ]); }, [&](){         h -= 1; });
+}
+template <typename T, int N>
+void shrink_cell(T const (& a)[N][N], point_t & offset, point_t & size, T target) {
+    shrink_cell(a, offset, size, [&](T it) -> bool { return it != target; });
 }
 template <typename T, int N>
 int area_cell(T const (& a)[N][N], T target) {
@@ -114,15 +118,20 @@ void board::shrink() {
             m_skips[y][x] = m_cell[y][x+1] == 0 ? 1 : m_skips[y][x+1] + 1;
         }
     }
+    m_stone_offset = { 0, 0 };
+    m_stone_size = { N, N };
+    shrink_cell(m_cell, m_stone_offset, m_stone_size, [](int n) -> bool { return n <= 1; });
 }
 void board::update() {
     m_area = area_cell(m_cell, 0);
     int obstacles = area_cell(m_cell, 1);
-    m_is_new = (m_area + obstacles == N * N) ? 1 : 0;
+    m_stone_area = N * N - (m_area + obstacles);
 }
 
 point_t board::offset() const { return m_offset; }
 point_t board::size() const { return m_size; }
+point_t board::stone_offset() const { return m_stone_offset; }
+point_t board::stone_size() const { return m_stone_size; }
 int board::at_local(point_t p) const {
     point_t q = offset();
     return m_cell[p.y+q.y][p.x+q.x];
@@ -131,9 +140,10 @@ int board::at(point_t p) const {
     return m_cell[p.y][p.x];
 }
 int board::area() const { return m_area; }
+int board::stone_area() const { return m_stone_area; }
 int board::w() const { return m_size.x; }
 int board::h() const { return m_size.y; }
-bool board::is_new() const { return m_is_new; }
+bool board::is_new() const { return m_stone_area == 0; }
 int board::skip(point_t p) const { return m_skips[p.y][p.x]; }
 
 bool board::is_intersect(block const & blk, placement_t const & p) const {
