@@ -24,9 +24,6 @@ struct photon_t {
     int dead_area;
     vector<placement_t> plc;
     int bix; // current block
-    // TODO: boardに持たせる
-    // point_t lp;
-    // point_t rp; // bounding box
 };
 
 double evaluate(photon_t const & a) {
@@ -49,8 +46,10 @@ void exact(photon_t & pho, board brd, vector<block> const & blks) {
     if (xs.empty()) return;
     vector<placement_t> ys = exact(brd, xs);
     int j = 0;
+    assert (pho.score >= 0);
     repeat_from (i, pho.bix, blks.size()) if (not pho.plc[i].used) {
         placement_t const & p = ys[j ++];
+        if (not p.used) continue;
         pho.plc[i] = p;
         block const & blk = blks[i];
         pho.score -= blk.area();
@@ -65,6 +64,7 @@ void exact(photon_t & pho, board brd, vector<block> const & blks) {
             brd.put(q, 2+i);
         }
     }
+    assert (pho.score >= 0);
     brd.update();
     pho.dead_area += brd.area();
 }
@@ -90,8 +90,6 @@ public:
             pho.dead_area = a_brd.area() - brd.area();
             pho.plc.resize(n, { false });
             pho.bix = 0;
-            // pho.lp = a_brd.offset();
-            // pho.rp = a_brd.offset() + a_brd.size();
             beam.push_back(pho);
         }
 int nthbeam = 0;
@@ -117,7 +115,7 @@ int nthbeam = 0;
                     int l = pho.brds.size();
                     repeat (bjx, l) {
                         board const & brd = pho.brds[bjx];
-                        placement_t p = initial_placement(blk, /* pho.lp */ { 0, 0 });
+                        placement_t p = initial_placement(blk, brd.stone_offset());
                         do {
                             int skip;
                             if (brd.is_puttable(blk, p, &skip)) {
@@ -125,7 +123,6 @@ int nthbeam = 0;
                                 npho.plc[bix] = p;
                                 npho.bix = bix + 1;
                                 npho.score -= blk.area();
-                                // update_bounding_box(brd, blk, p, pho.lp, pho.rp, &npho.lp, &npho.rp);
                                 board nbrd = brd;
                                 for (auto q : blk.stones(p)) {
                                     repeat (i,4) {
@@ -150,7 +147,7 @@ int nthbeam = 0;
                                 next.push_back(npho);
                             }
                             p.p.x += skip - 1;
-                        } while (next_placement(p, blk, /* pho.lp, pho.rp */ { 0, 0 }, { board_size, board_size }));
+                        } while (next_placement(p, blk, brd.stone_offset(), brd.stone_offset() + brd.stone_size()));
                     }
                 }
                 if (beam_width * 10 < next.size()) {
