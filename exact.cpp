@@ -28,7 +28,7 @@ public:
         }
         result.clear();
         highscore = brd.area();
-        dfs(brd.area() /* , brd.offset(), brd.offset() + brd.size() */);
+        dfs(brd.area());
 #ifndef NDEBUG
         assert (result.size() <= n);
         assert (acc.size() == 0);
@@ -57,7 +57,7 @@ private:
         if (highscore <= score - rest_stone[l]) return;
         brd.shrink();
         block const & blk = blks[l];
-        placement_t p = initial_placement(blk, /* lp */ { 0, 0 });
+        placement_t p = initial_placement(blk, brd.offset());
         do {
             int skip;
             if (brd.is_puttable(blk, p, &skip)) {
@@ -72,9 +72,9 @@ private:
                 brd.update();
             }
             p.p.x += skip - 1;
-        } while (next_placement(p, blk, /* lp, rp */ { 0, 0 }, { board_size, board_size }));
+        } while (next_placement(p, blk, brd.offset(), brd.offset() + brd.size()));
         acc.push_back({ false });
-        dfs(score /* , lp, rp */);
+        dfs(score);
         acc.pop_back();
     }
 };
