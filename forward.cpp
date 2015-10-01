@@ -135,6 +135,7 @@ int nthbeam = 0;
                                     nbrd.put(q, 2+bix);
                                 }
                                 nbrd.update();
+#if 1
                                 if (bjx != l - 1) npho.brds[bjx] = npho.brds[l - 1];
                                 npho.brds.pop_back();
                                 for (auto && it : nbrd.split()) {
@@ -144,6 +145,9 @@ int nthbeam = 0;
                                         npho.brds.push_back(it);
                                     }
                                 }
+#else
+                                npho.brds[bjx] = nbrd;
+#endif
                                 next.push_back(npho);
                             }
                             p.p.x += skip - 1;
