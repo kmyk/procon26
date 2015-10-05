@@ -22,12 +22,19 @@ struct photon_t {
     int score;
     int circumference;
     int dead_area;
+    int dead_stone;
     vector<placement_t> plc;
     int bix; // current block
 };
 
 double evaluate(photon_t const & a) {
-    return - a.circumference - a.score * 64;
+    double p = a.bix /(double) a.plc.size();
+    double q = 1 - p;
+    return
+        - a.circumference * (8 * q)
+        - a.score * (32 + 32 * p)
+        - a.dead_area * (8 * q)
+        - a.dead_stone * (16 * q);
 }
 
 // larger iff better
@@ -110,6 +117,7 @@ int nthbeam = 0;
                     {
                         photon_t npho = pho;
                         npho.bix = bix + 1;
+                        npho.dead_stone += blk.area();
                         next.push_back(npho);
                     }
                     int l = pho.brds.size();
@@ -135,7 +143,7 @@ int nthbeam = 0;
                                     nbrd.put(q, 2+bix);
                                 }
                                 nbrd.update();
-#if 1
+#if 0
                                 if (bjx != l - 1) npho.brds[bjx] = npho.brds[l - 1];
                                 npho.brds.pop_back();
                                 for (auto && it : nbrd.split()) {
