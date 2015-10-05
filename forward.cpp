@@ -2,6 +2,7 @@
 #include <vector>
 #include <algorithm>
 #include <set>
+#include <memory>
 #include <cassert>
 #include "procon26.hpp"
 #include "exact.hpp"
@@ -26,6 +27,7 @@ struct photon_t {
     vector<placement_t> plc;
     int bix; // current block
 };
+typedef shared_ptr<photon_t> photon_ptr;
 
 double evaluate(photon_t const & a) {
     double p = a.bix /(double) a.plc.size();
@@ -40,6 +42,10 @@ double evaluate(photon_t const & a) {
 // larger iff better
 bool operator < (photon_t const & a, photon_t const & b) {
     return evaluate(a) < evaluate(b);
+}
+
+bool photon_ptr_comparator(photon_ptr const & a, photon_ptr const & b) {
+    return *a < *b;
 }
 
 constexpr int beam_width = 1024;
@@ -88,21 +94,23 @@ public:
     vector<placement_t> operator () (board const & a_brd, vector<block> const & blks) {
         int n = blks.size();
         highscore = a_brd.area();
-        vector<photon_t> beam;
+        vector<photon_ptr> beam;
         for (auto && brd : a_brd.split()) {
-            photon_t pho;
+            photon_ptr ppho = make_shared<photon_t>();
+            photon_t & pho = *ppho;
             pho.brds.push_back(brd);
             pho.score = a_brd.area();
             pho.circumference = 0; // 相対的なもののみ気にする
             pho.dead_area = a_brd.area() - brd.area();
             pho.plc.resize(n, { false });
             pho.bix = 0;
-            beam.push_back(pho);
+            beam.push_back(ppho);
         }
 int nthbeam = 0;
-        vector<photon_t> next;
+        vector<photon_ptr> next;
         while (not beam.empty()) {
-            for (auto const & pho : beam) {
+            for (auto && ppho : beam) {
+                photon_t const & pho = *ppho;
                 if (pho.score < highscore) {
                     highscore = pho.score;
                     result = pho.plc;
@@ -115,9 +123,10 @@ int nthbeam = 0;
                 if (bix < n) {
                     block const & blk = blks[bix];
                     {
-                        photon_t npho = pho;
-                        npho.bix = bix + 1;
-                        npho.dead_stone += blk.area();
+                        photon_ptr npho = make_shared<photon_t>();
+                        *npho = pho;
+                        npho->bix = bix + 1;
+                        npho->dead_stone += blk.area();
                         next.push_back(npho);
                     }
                     int l = pho.brds.size();
@@ -127,7 +136,9 @@ int nthbeam = 0;
                         do {
                             int skip;
                             if (brd.is_puttable(blk, p, &skip)) {
-                                photon_t npho = pho;
+                                photon_ptr pnpho = make_shared<photon_t>();
+                                *pnpho = pho;
+                                photon_t & npho = *pnpho;
                                 npho.plc[bix] = p;
                                 npho.bix = bix + 1;
                                 npho.score -= blk.area();
@@ -156,18 +167,18 @@ int nthbeam = 0;
 #else
                                 npho.brds[bjx] = nbrd;
 #endif
-                                next.push_back(npho);
+                                next.push_back(pnpho);
                             }
                             p.p.x += skip - 1;
                         } while (next_placement(p, blk, brd.stone_offset(), brd.stone_offset() + brd.stone_size()));
                     }
                 }
                 if (beam_width * 10 < next.size()) {
-                    sort(next.rbegin(), next.rend());
+                    sort(next.rbegin(), next.rend(), &photon_ptr_comparator);
                     next.resize(beam_width);
                 }
             }
-            sort(next.rbegin(), next.rend());
+            sort(next.rbegin(), next.rend(), &photon_ptr_comparator);
             if (beam_width < next.size()) next.resize(beam_width);
             // for (auto && pho : next) pho.brd.shrink(); // split internally calls shrink
             next.swap(beam);
