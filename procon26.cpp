@@ -151,7 +151,7 @@ bool board::is_intersect(block const & blk, placement_t const & p) const {
 }
 bool board::is_intersect(block const & blk, placement_t const & p, int *skipp) const {
     repeat (i, int(blk.stones(p).size())) {
-        point_t q = blk.stones(p)[i];
+        point_t q = blk.stones(p.f,p.r)[i] + p.p;
         if (q.y < 0 or board_size <= q.y or board_size <= q.x) {
             if (skipp) *skipp = board_size;
             return true;
@@ -178,9 +178,9 @@ bool board::is_puttable(block const & blk, placement_t const & p, int *skipp) co
     if (is_new()) {
         return true;
     } else {
-        for (auto q : blk.stones(p)) {
+        for (auto const & q : blk.stones(p.f,p.r)) {
             repeat (i,4) {
-                point_t r = q + dp[i];
+                point_t r = (q + p.p) + dp[i];
                 if (not is_on_board(r)) continue;
                 if (at(r) >= 2) return true; // is a stone
             }
@@ -200,7 +200,7 @@ void board::put(point_t p, int value) {
  *   戻す: 0
  */
 void board::put(block const & blk, placement_t const & p, int value) {
-    for (auto q : blk.stones(p)) put(q, value);
+    for (auto const & q : blk.stones(p.f,p.r)) put(q + p.p, value);
 }
 
 std::vector<board> board::split() const {
