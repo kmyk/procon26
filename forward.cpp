@@ -66,8 +66,8 @@ void exact(photon_t & pho, board brd, vector<block> const & blks) {
         pho.plc[i] = p;
         block const & blk = blks[i];
         pho.score -= blk.area();
-        for (auto const & q0 : blk.stones(p.f,p.r)) {
-            point_t q = q0 + p.p;
+        repeat (j, blk.area()) {
+            point_t q = blk.stones(p.f,p.r)[j] + p.p;
             repeat (i,4) {
                 auto r = q + dp[i];
                 pho.circumference +=
@@ -144,8 +144,8 @@ int nthbeam = 0;
                                 npho.bix = bix + 1;
                                 npho.score -= blk.area();
                                 board nbrd = brd;
-                                for (auto const & q0 : blk.stones(p.f,p.r)) {
-                                    point_t q = q0 + p.p;
+                                repeat (j, blk.area()) {
+                                    point_t q = blk.stones(p.f,p.r)[j] + p.p;
                                     repeat (i,4) {
                                         auto r = q + dp[i];
                                         npho.circumference +=

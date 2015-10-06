@@ -150,7 +150,7 @@ bool board::is_intersect(block const & blk, placement_t const & p) const {
     return is_intersect(blk, p, nullptr);
 }
 bool board::is_intersect(block const & blk, placement_t const & p, int *skipp) const {
-    repeat (i, int(blk.stones(p).size())) {
+    repeat (i, blk.area()) {
         point_t q = blk.stones(p.f,p.r)[i] + p.p;
         if (q.y < 0 or board_size <= q.y or board_size <= q.x) {
             if (skipp) *skipp = board_size;
@@ -178,9 +178,9 @@ bool board::is_puttable(block const & blk, placement_t const & p, int *skipp) co
     if (is_new()) {
         return true;
     } else {
-        for (auto const & q : blk.stones(p.f,p.r)) {
+        repeat (j,blk.area()) {
             repeat (i,4) {
-                point_t r = (q + p.p) + dp[i];
+                point_t r = blk.stones(p.f,p.r)[j] + p.p + dp[i];
                 if (not is_on_board(r)) continue;
                 if (at(r) >= 2) return true; // is a stone
             }
@@ -269,8 +269,8 @@ block::block(block_t const & a) {
     }
     for (flip_t f : { H, T }) {
         for (rot_t r : { R0, R90, R180, R270 }) {
-            m_skips[f][r].resize(m_stones[f][r].size());
-            repeat (i, int(m_stones[f][r].size())) {
+            m_skips[f][r].resize(m_area);
+            repeat (i, m_area) {
                 point_t p = m_stones[f][r][i];
                 m_skips[f][r][i] = 0;
                 while (is_on_board(p) and m_cell[f][r][p.y][p.x]) {

@@ -6,7 +6,6 @@ SRCS = forward.cpp exact.cpp procon26.cpp common.cpp
 ifdef DEBUG
     CXXFLAGS += -g -DDEBUG -D_GLIBCXX_DEBUG
 endif
-CXXFLAGS += -Wno-deprecated-declarations
 
 all: build
 
