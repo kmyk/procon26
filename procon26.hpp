@@ -74,8 +74,7 @@ class block;
 class board {
 public:
     static constexpr int N = board_size;
-private:
-    // pimplする？
+public:
     int m_cell[N][N];
     point_t m_offset;
     point_t m_size;
@@ -112,7 +111,6 @@ public:
      */
     void shrink();
     [[deprecated]]
-    std::vector<board> split() const;
 
 public:
     /**
@@ -152,7 +150,7 @@ public:
 class block {
 public:
     static constexpr int N = block_size;
-private:
+public:
     bool m_cell[2][4][N][N]; // m_cells?
     point_t m_offset[2][4];
     point_t m_size[2][4];
