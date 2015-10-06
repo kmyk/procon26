@@ -45,7 +45,9 @@ flip_t flip(flip_t f);
 rot_t rot90(rot_t r);
 bool operator == (point_t const & a, point_t const & b);
 bool operator < (point_t const & a, point_t const & b);
-point_t operator + (point_t const & a, point_t const & b);
+inline point_t operator + (point_t const & a, point_t const & b) {
+     return (point_t) { a.x + b.x, a.y + b.y };
+}
 point_t operator - (point_t const & a, point_t const & b);
 
 std::ostream & operator << (std::ostream & output, flip_t a);

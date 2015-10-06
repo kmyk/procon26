@@ -41,9 +41,6 @@ bool operator == (point_t const & a, point_t const & b) {
 bool operator < (point_t const & a, point_t const & b) {
     return std::make_pair(a.x, a.y) < std::make_pair(b.x, b.y);
 }
-point_t operator + (point_t const & a, point_t const & b) {
-    return (point_t) { a.x + b.x, a.y + b.y };
-}
 point_t operator - (point_t const & a, point_t const & b) {
     return (point_t) { a.x - b.x, a.y - b.y };
 }

@@ -186,7 +186,8 @@ public:
     /**
      * @return in block world
      */
-    std::vector<point_t> const & stones(flip_t f, rot_t r) const;
+    // std::vector<point_t> const & stones(flip_t f, rot_t r) const;
+    inline std::vector<point_t> const & stones(flip_t f, rot_t r) const { return m_stones[f][r]; }
     /**
      * @return in board world
      */

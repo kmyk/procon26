@@ -306,7 +306,6 @@ bool block::at(placement_t const & p, point_t q) const {
     return at(p.f, p.r, q - p.p);
 }
 bool block::is_duplicated(flip_t f, rot_t r) const { return m_duplicated[f][r]; }
-std::vector<point_t> const & block::stones(flip_t f, rot_t r) const { return m_stones[f][r]; }
 std::vector<point_t> block::stones(placement_t const & p) const {
     std::vector<point_t> qs = m_stones[p.f][p.r];
     for (auto && q : qs) q = q + p.p;
