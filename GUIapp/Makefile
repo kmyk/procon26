@@ -2,7 +2,7 @@ OBJS		=	 Main.o GUIapp.o State.o MainWindow.o Mouse.o Map.o Cell.o
 
 CURPATH = 	$(shell pwd)
 INCLUDE =		$(CURPATH)/include
-EXE_FILE			=		$(CURPATH)/GUIapp
+EXE_FILE			=		$(CURPATH)/GUIapp.elf
 
 CXX 		= 	g++ -fstack-protector-all -D_FORTIFY_SOURCE=2
 LIBSDL_CXXFLAGS = $(shell sdl2-config --cflags)
