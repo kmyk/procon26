@@ -1,4 +1,4 @@
-OBJS		=	 Main.o GUIapp.o State.o MainWindow.o Mouse.o
+OBJS		=	 Main.o GUIapp.o State.o MainWindow.o Mouse.o Map.o Cell.o
 
 CURPATH = 	$(shell pwd)
 INCLUDE =		$(CURPATH)/include

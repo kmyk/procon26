@@ -12,8 +12,8 @@
 
 GUIapp::GUIapp(){
   SDL_Init(SDL_INIT_EVERYTHING);
-  main_window = new MainWindow(500,500);
   state = new State(1);
+  main_window = new MainWindow(500,500);
   load_input();
   Mouse::create();
   mouse = Mouse::instance();
@@ -45,7 +45,6 @@ bool GUIapp::polling_event(void){
       case SDL_MOUSEBUTTONDOWN:
       {
         mouse->add_button_event(ev.button);
-        printf("down\n");
         //if(key == SDLK_ESCAPE){ return false; }
       }
         break;
@@ -63,7 +62,7 @@ void GUIapp::update(){
 
 }
 void GUIapp::draw(){
-
+  main_window->draw();
 }
 
 void GUIapp::main_loop(){

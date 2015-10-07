@@ -7,7 +7,7 @@ public:
   char* output;
   int now_game;
   State(int);
-  ~State();  
+  ~State();
 };
 
 #endif
