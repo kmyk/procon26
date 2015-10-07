@@ -12,7 +12,8 @@
 
 GUIapp::GUIapp(){
   SDL_Init(SDL_INIT_EVERYTHING);
-  state = new State(1);
+  State::create();
+  state = State::instance();
   main_window = new MainWindow(500,500);
   load_input();
   Mouse::create();
@@ -20,8 +21,8 @@ GUIapp::GUIapp(){
 }
 GUIapp::~GUIapp(){
   SAFE_DELETE(main_window);
-  SAFE_DELETE(state);
   Mouse::destroy();
+  State::destroy();
 }
 
 void GUIapp::load_input(){

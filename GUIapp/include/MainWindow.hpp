@@ -3,6 +3,7 @@
 
 #include <SDL.h>
 class Map;
+class Mouse;
 
 class MainWindow{
 private:
@@ -10,6 +11,7 @@ private:
   SDL_Renderer* renderer;
   SDL_Rect win_rect;
   Map* map;
+  Mouse* mouse;
 public:
   MainWindow(int,int);
   ~MainWindow();

@@ -1,6 +1,7 @@
 #include "Cell.hpp"
 #include "Object.hpp"
 #include "Map.hpp"
+#include "State.hpp"
 
 Map::Map(){
   cell = new Cell*[row];
