@@ -13,27 +13,17 @@
 GUIapp::GUIapp(){
   SDL_Init(SDL_INIT_EVERYTHING);
   State::create();
-  state = State::instance();
-  main_window = new MainWindow(500,500);
-  load_input();
   Mouse::create();
+  state = State::instance();
   mouse = Mouse::instance();
+  state->load_input();
+  state->parse_input();
+  main_window = new MainWindow(500,500);
 }
 GUIapp::~GUIapp(){
   SAFE_DELETE(main_window);
   Mouse::destroy();
   State::destroy();
-}
-
-void GUIapp::load_input(){
-  char filepath[256];
-  sprintf(filepath,"input/quest%d.txt",state->now_game);
-  EXCEPT_NORMAL_BEGIN;
-  FILE* fp;
-  if((fp = fopen(filepath,"r")) == NULL) throw "input file open error";
-  fread(state->input,sizeof(char),1024,fp);
-  fclose(fp);
-  EXCEPT_NORMAL_END;
 }
 
 bool GUIapp::polling_event(void){

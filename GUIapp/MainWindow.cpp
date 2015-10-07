@@ -4,6 +4,7 @@
 #include "Map.hpp"
 #include "MainWindow.hpp"
 #include "Cell.hpp"
+#include "Utility.hpp"
 
 MainWindow::MainWindow(int _w,int _h){
   win_rect.w = Cell::size * 32;
@@ -20,11 +21,12 @@ MainWindow::~MainWindow(){
 
 void MainWindow::update(){
   if(mouse->exist_button_event()){
-    SDL_MouseButtonEvent* bevent = mouse->get_button_event();
-    if(bevent->type == SDL_MOUSEBUTTONUP){
-      int cx = bevent->x / Cell::size;
-      int cy = bevent->y / Cell::size;
-      map->put_stone(cx,cy);
+    SDL_MouseButtonEvent bevent = mouse->get_button_event();
+    if(bevent.type == SDL_MOUSEBUTTONUP){
+      int cx = bevent.x / Cell::size;
+      int cy = bevent.y / Cell::size;
+      if(map->can_put_stone(cx,cy))
+        map->put_stone(cx,cy);
     }
   }
 }

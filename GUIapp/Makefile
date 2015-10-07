@@ -1,3 +1,4 @@
+DEBUG		=  "ON"
 OBJS		=	 Main.o GUIapp.o State.o MainWindow.o Mouse.o Map.o Cell.o Stone.o
 
 CURPATH = 	$(shell pwd)
@@ -8,7 +9,12 @@ CXX 		= 	g++ -fstack-protector-all -D_FORTIFY_SOURCE=2
 LIBSDL_CXXFLAGS = $(shell sdl2-config --cflags)
 LIBSDL_LDFLAGS  = $(shell sdl2-config --libs)
 
+ifeq ($(DEBUG),"ON")
+CXXFLAG =		-Wall -I$(INCLUDE) -std=c++11 $(LIBSDL_CXXFLAGS) -Wdelete-incomplete -g -o
+else
 CXXFLAG =		-Wall -I$(INCLUDE) -std=c++11 $(LIBSDL_CXXFLAGS) -Wdelete-incomplete -o
+endif
+
 LDFLAG	=		-Wl,-z,relro,-z,now -lSDL2_image $(LIBSDL_LDFLAGS) -lSDL2_gfx
 
 CHKSEC	=		$(shell which checksec.sh)

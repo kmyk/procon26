@@ -16,7 +16,6 @@ public:
   GUIapp();
   ~GUIapp();
   void main_loop();
-  void load_input();
   bool polling_event();
   void update();
   void draw();

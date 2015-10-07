@@ -17,7 +17,7 @@ void Cell::draw(SDL_Renderer* renderer){
       boxRGBA(renderer,x * size + edge,y * size + edge,(x + 1) * size - edge,(y + 1) * size - edge,
               255,255,255,255);
     }else{
-      boxRGBA(renderer,x * size + edge,y * size + edge,(x + 1) * size - edge,(y + 1) * size - edge,
+      boxRGBA(renderer,x * size,y * size,(x + 1) * size,(y + 1) * size,
               0,0,0,255);
     }
 

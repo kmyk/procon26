@@ -11,18 +11,20 @@ private:
   ~State();
   State(const State&){;}
   static State* mInstance;
-  std::vector<Stone*>stones;
-  int stone_num;
-  bool **map_geo;
 public:
+  std::vector<Stone*>stones;
   char* input;
+  int input_size;
   char* output;
   int now_game;
   int now_stone;
+  int stone_num;
+  bool **map_geo;
   static State* instance();
   static void create();
   static void destroy();
   void parse_input();
+  void load_input();
 };
 
 #endif

@@ -24,6 +24,7 @@ State::State(int _now_game){
   now_game = _now_game;
   now_stone = 0;
   stone_num = 0;
+  input_size = 0;
   input = new char[1024];
   map_geo = new bool*[Map::row];
   for(int y = 0; y < Map::row; y++){
@@ -34,7 +35,6 @@ State::State(int _now_game){
   }
 }
 State::~State(){
-  //SAFE_DELETE(input);
   delete[] input;
   for(int y = 0; y < Map::row; y++){
       delete [] map_geo[y];
@@ -46,9 +46,23 @@ State::~State(){
   delete[] map_geo;
 
 }
-
+void State::load_input(){
+  char filepath[256];
+  sprintf(filepath,"input/quest%d.txt",now_game);
+  EXCEPT_NORMAL_BEGIN;
+  FILE* fp;
+  if((fp = fopen(filepath,"rb")) == NULL) throw "input file open error";
+  fseek(fp,0,SEEK_END);
+  input_size = ftell(fp);
+  fseek(fp,0,SEEK_SET);
+  input = new char[input_size];
+  fread(input,sizeof(char),input_size,fp);
+  fclose(fp);
+  EXCEPT_NORMAL_END;
+}
 void State::parse_input(){
-  /* >>>> Super f*cking DIRTY code. I'm too lazy to build parser class:-) <<<< */
+  /* >>>> Super f*cking DIRTY code. I'm too lazy to build parser class;-) <<<< */
+  for(int i = 0; i < input_size; i++) printf("%c",input[i]);
   int ptr = 0;
   for(int y = 0; y < Map::row; y++){
     for(int x = 0; x < Map::colum; x++){
