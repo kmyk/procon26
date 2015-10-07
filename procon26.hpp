@@ -110,7 +110,8 @@ public:
      * @brief offsetとsize等を更新
      */
     void shrink();
-  void split();
+    [[deprecated]]
+    std::vector<board> split() const;
 public:
     /**
      * @brief (0,0) of board local in board world
