@@ -140,7 +140,7 @@ int nthbeam = 0;
                         placement_t p = initial_placement(blk, brd.stone_offset());
                         do {
                             int skip;
-                            if (brd.is_puttable(blk, p, &skip)) {
+                            if (brd.is_puttable(blk, p, 2+bix, &skip)) {
                                 photon_ptr pnpho = make_shared<photon_t>();
                                 *pnpho = pho;
                                 photon_t & npho = *pnpho;

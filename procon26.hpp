@@ -91,8 +91,7 @@ public:
 public:
     bool is_intersect(block const & blk, placement_t const & p) const;
     bool is_intersect(block const & blk, placement_t const & p, int *skip) const;
-    bool is_puttable(block const & blk, placement_t const & p) const;
-    bool is_puttable(block const & blk, placement_t const & p, int *skip) const;
+    bool is_puttable(block const & blk, placement_t const & p, int n, int *skip) const;
     /**
      * @attention 破壊的 無確認
      * @attention 後続してupdateを呼ぶこと

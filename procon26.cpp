@@ -169,11 +169,7 @@ bool board::is_intersect(block const & blk, placement_t const & p, int *skipp) c
     return false;
 }
 
-bool board::is_puttable(block const & blk, placement_t const & p) const {
-    return is_puttable(blk, p, nullptr);
-}
-
-bool board::is_puttable(block const & blk, placement_t const & p, int *skipp) const {
+bool board::is_puttable(block const & blk, placement_t const & p, int n, int *skipp) const {
     if (is_intersect(blk, p, skipp)) return false;
     if (is_new()) {
         return true;
@@ -182,7 +178,7 @@ bool board::is_puttable(block const & blk, placement_t const & p, int *skipp) co
             repeat (i,4) {
                 point_t r = blk.stones(p.f,p.r)[j] + p.p + dp[i];
                 if (not is_on_board(r)) continue;
-                if (at(r) >= 2) return true; // is a stone
+                if (2 <= at(r) and at(r) < n) return true; // is a stone
             }
         }
         return false;

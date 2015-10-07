@@ -62,7 +62,7 @@ private:
         placement_t p = initial_placement(blk, brd.stone_offset());
         do {
             int skip;
-            if (brd.is_puttable(blk, p, &skip)) {
+            if (brd.is_puttable(blk, p, 2+l, &skip)) {
                 brd.put(blk, p, 2+l);
                 brd.update();
                 acc.push_back(p);
