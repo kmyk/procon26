@@ -9,7 +9,7 @@ LIBSDL_CXXFLAGS = $(shell sdl2-config --cflags)
 LIBSDL_LDFLAGS  = $(shell sdl2-config --libs)
 
 CXXFLAG =		-Wall -I$(INCLUDE) -std=c++11 $(LIBSDL_CXXFLAGS) -Wdelete-incomplete -o
-LDFLAG	=		-Wl,-z,relro,-z,now -lSDL2_image $(LIBSDL_LDFLAGS)
+LDFLAG	=		-Wl,-z,relro,-z,now -lSDL2_image $(LIBSDL_LDFLAGS) -lSDL2_gfx
 
 CHKSEC	=		$(shell which checksec.sh)
 

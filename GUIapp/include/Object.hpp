@@ -5,10 +5,9 @@
 
 class Texture;
 class Object{
-private:
+protected:  
   SDL_Surface* surface;
   SDL_Texture* texture;
-protected:
   SDL_Rect* obj_rect;
   SDL_Rect* obj_pos;
 public:

@@ -59,7 +59,7 @@ bool GUIapp::polling_event(void){
 }
 
 void GUIapp::update(){
-
+  main_window->update();
 }
 void GUIapp::draw(){
   main_window->draw();
