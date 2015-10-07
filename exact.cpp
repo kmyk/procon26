@@ -3,6 +3,9 @@
 #include <algorithm>
 #include <cassert>
 #include "procon26.hpp"
+#ifdef USE_EXACT
+#include "signal.hpp"
+#endif
 using namespace std;
 
 class exact_solver {
@@ -47,6 +50,7 @@ private:
                 highscore = score;
                 result = acc;
 #ifdef USE_EXACT
+                g_provisional_result = { result };
                 cerr << highscore << endl;
 #endif
             }

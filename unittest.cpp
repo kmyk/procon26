@@ -5,6 +5,8 @@
 using namespace std;
 using namespace boost;
 
+output_t g_provisional_result; // dummy
+
 BOOST_AUTO_TEST_SUITE(suite_block)
 
 BOOST_AUTO_TEST_CASE(case_block_1) {

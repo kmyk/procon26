@@ -6,6 +6,9 @@
 #include <cassert>
 #include "procon26.hpp"
 #include "exact.hpp"
+#ifdef USE_FORWARD
+#include "signal.hpp"
+#endif
 using namespace std;
 
 /**
@@ -116,6 +119,7 @@ int nthbeam = 0;
                     highscore = pho.score;
                     result = pho.plc;
 #ifdef USE_FORWARD
+                    g_provisional_result = { result };
                     cerr << highscore << endl;
 #endif
                 }
