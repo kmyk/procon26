@@ -9,6 +9,7 @@
 #include "GUIapp.hpp"
 #include "Utility.hpp"
 #include "Mouse.hpp"
+#include "SubWindow.hpp"
 
 GUIapp::GUIapp(){
   SDL_Init(SDL_INIT_EVERYTHING);
@@ -18,10 +19,12 @@ GUIapp::GUIapp(){
   mouse = Mouse::instance();
   state->load_input();
   state->parse_input();
-  main_window = new MainWindow(500,500);
+  main_window = new MainWindow();
+  sub_window = new SubWindow();
 }
 GUIapp::~GUIapp(){
   SAFE_DELETE(main_window);
+  SAFE_DELETE(sub_window);
   Mouse::destroy();
   State::destroy();
 }
@@ -51,9 +54,11 @@ bool GUIapp::polling_event(void){
 
 void GUIapp::update(){
   main_window->update();
+  sub_window->update();
 }
 void GUIapp::draw(){
   main_window->draw();
+  sub_window->draw();    
 }
 
 void GUIapp::main_loop(){

@@ -6,7 +6,7 @@
 #include "Cell.hpp"
 #include "Utility.hpp"
 
-MainWindow::MainWindow(int _w,int _h){
+MainWindow::MainWindow(){
   win_rect.w = Cell::size * 32;
   win_rect.h = Cell::size * 32;
   SDL_CreateWindowAndRenderer(win_rect.w, win_rect.h,0,&window,&renderer);

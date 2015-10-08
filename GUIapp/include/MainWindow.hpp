@@ -13,7 +13,7 @@ private:
   Map* map;
   Mouse* mouse;
 public:
-  MainWindow(int,int);
+  MainWindow();
   ~MainWindow();
   void draw();
   void update();
