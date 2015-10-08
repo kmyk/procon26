@@ -82,6 +82,7 @@ public:
     point_t m_stone_offset;
     point_t m_stone_size;
     int m_stone_area;
+    int m_first_stone;
     int m_skips[N][N];
 
 public:

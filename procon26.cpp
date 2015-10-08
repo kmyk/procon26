@@ -123,9 +123,23 @@ void board::shrink() {
     shrink_cell(m_cell, m_stone_offset, m_stone_size, [](int n) -> bool { return n <= 1; });
 }
 void board::update() {
-    m_area = area_cell(m_cell, 0);
-    int obstacles = area_cell(m_cell, 1);
-    m_stone_area = N * N - (m_area + obstacles);
+    m_area = 0;
+    m_stone_area = 0;
+    m_first_stone = 1000000007;
+    repeat (y,board_size) {
+        repeat (x,board_size) {
+            switch (m_cell[y][x]) {
+                case 0:
+                    m_area += 1;
+                    break;
+                case 1:
+                    break;
+                default:
+                    m_stone_area += 1;
+                    m_first_stone = std::min(m_first_stone, m_cell[y][x]);
+            }
+        }
+    }
 }
 
 point_t board::offset() const { return m_offset; }
@@ -178,7 +192,9 @@ bool board::is_puttable(block const & blk, placement_t const & p, int n, int *sk
             repeat (i,4) {
                 point_t r = blk.stones(p.f,p.r)[j] + p.p + dp[i];
                 if (not is_on_board(r)) continue;
-                if (2 <= at(r) and at(r) < n) return true; // is a stone
+                int a = at(r);
+                if (2 <= a and a < n) return true; // is a stone
+                if (2 <= a and n < a and a == m_first_stone) return true;
             }
         }
         return false;
