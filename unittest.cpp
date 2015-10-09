@@ -27,6 +27,7 @@ BOOST_AUTO_TEST_CASE(case_block_1) {
     BOOST_CHECK_EQUAL (b.at(H, R0, b.offset(H, R0) + (point_t) { 1, 0 }), true);
     BOOST_CHECK_EQUAL (b.at(H, R0, b.offset(H, R0) + (point_t) { 0, 1 }), true);
     BOOST_CHECK_EQUAL (b.area(), 5);
+    BOOST_CHECK_EQUAL (b.circumference(), 10);
     BOOST_CHECK_EQUAL (b.size(H, R90), ((point_t){ 2, 3 }));
     repeat (i, int(b.stones(H,R0).size())) {
         if (b.stones(H,R0)[i] == (point_t) { 4, 3 }) {

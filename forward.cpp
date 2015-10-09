@@ -134,6 +134,7 @@ int nthbeam = 0;
                         npho->dead_stone += blk.area();
                         next.push_back(npho);
                     }
+                    bool is_just_used = false; // ぴったり嵌るような使われ方をしたか
                     int l = pho.brds.size();
                     repeat (bjx, l) {
                         board const & brd = pho.brds[bjx];
@@ -158,6 +159,10 @@ int nthbeam = 0;
                                             -1;
                                     }
                                     nbrd.put(q, 2+bix);
+                                }
+                                if (pho.circumference - npho.circumference == blk.circumference()) {
+                                    if (is_just_used) continue;
+                                    is_just_used = true;
                                 }
                                 nbrd.update();
 #if 0

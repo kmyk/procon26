@@ -300,6 +300,17 @@ block::block(block_t const & a) {
             sigs.insert(sig);
         }
     }
+    m_circumference = 0;
+    repeat (i, m_area) {
+        point_t p = m_stones[H][R0][i];
+        repeat (j,4) {
+            auto q = p + dp[j];
+            m_circumference +=
+                not is_on_board(q) ? 1 :
+                m_cell[H][R0] == 0 ? 1 :
+                -1;
+        }
+    }
 }
 
 point_t block::offset(flip_t f, rot_t r) const { return m_offset[f][r]; }
@@ -307,6 +318,7 @@ point_t block::size(flip_t f, rot_t r) const { return m_size[f][r]; }
 point_t block::offset(placement_t const & p) const { assert (p.used); return offset(p.f,p.r); }
 point_t block::size(placement_t const & p) const { assert (p.used); return size(p.f,p.r); }
 int block::area() const { return m_area; }
+int block::circumference() const { return m_circumference; }
 int block::w(flip_t f, rot_t r) const { return size(f,r).x; }
 int block::h(flip_t f, rot_t r) const { return size(f,r).y; }
 int block::w(placement_t const & p) const { return w(p.f,p.r); }
