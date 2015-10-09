@@ -14,7 +14,7 @@ void export_to_file(output_t const & a) {
         int i = 0;
         do {
             ostringstream oss;
-            oss << ".log-" << i << ".txt";
+            oss << ".log-" << (i++) << ".txt";
             path = oss.str();
         } while (boost::filesystem::exists(path));
     }
