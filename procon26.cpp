@@ -307,8 +307,8 @@ block::block(block_t const & a) {
             auto q = p + dp[j];
             m_circumference +=
                 not is_on_board(q) ? 1 :
-                m_cell[H][R0] == 0 ? 1 :
-                -1;
+                m_cell[H][R0][q.y][q.x] == 0 ? 1 :
+                0;
         }
     }
 }

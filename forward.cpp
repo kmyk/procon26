@@ -197,6 +197,7 @@ int nthbeam = 0;
 cerr << "beam " << (nthbeam ++) << " : " << beam.size() << endl;
 repeat (i, min<int>(3, beam.size())) {
     cerr << beam[i]->brds.front();
+    cerr << "score: " << beam[i]->score << endl;
     cerr << "evaluate: " << evaluate(*beam[i]) << endl;
     cerr << "circumference: " << beam[i]->circumference << endl;
 }
