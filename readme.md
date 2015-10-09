@@ -13,6 +13,18 @@
 
 ( commit e6cf2a8d9a4b6b140f8d9e956731c5e85a60e041 時 )
 
+## 補助ツール
+
+SDL2.0,SDL2_image,SDL2_gfx,SDL2_ttfが必要です
+
+``` sh
+    $ cd GUIapp
+    $ make
+    $ ./GUIapp.elf <game num>
+```
+![画面](GUIapp/doc/img/image1.png "画面")
+-Tabキー: 裏返す
+-Spaceキー: 90度回転
 
 ## linkとか
 
