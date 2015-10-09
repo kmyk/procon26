@@ -190,6 +190,7 @@ int nthbeam = 0;
             next.swap(beam);
             next.clear();
 cerr << "beam " << (nthbeam ++) << " : " << beam.size() << endl;
+cerr << beam.front()->brds.front();
         }
         return result;
     }

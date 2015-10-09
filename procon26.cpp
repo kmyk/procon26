@@ -361,3 +361,23 @@ void update_bounding_box(board const & brd, block const & blk, placement_t const
         *nrp = pwmax(*nrp, rp);
     }
 }
+
+std::ostream & operator << (std::ostream & out, board const & brd) {
+    repeat (y, board_size) {
+        repeat (x, board_size) {
+            int n = brd.at({ x, y });
+            if (n == 0) {
+                out << "\x1b[40m  ";
+            } else if (n == 1) {
+                out << "\x1b[47m  ";
+            } else {
+                const char table[] = "0123456789ABCDEF";
+                int a = (n-2)/16;
+                int b = (n-2)%16;
+                out << "\x1b[4" << ((n - 2) % 6 + 1) << "m" << (a == 0 ? ' ' : table[a]) << table[b];
+            }
+        }
+        out << "\x1b[49m" << std::endl;
+    }
+    return out;
+}
