@@ -153,8 +153,8 @@ int nthbeam = 0;
                                     repeat (i,4) {
                                         auto r = q + dp[i];
                                         npho.circumference +=
-                                            not is_on_board(r) ? 1 :
-                                            nbrd.at(q) == 0 ? 1 :
+                                            not is_on_board(r) ? -1 :
+                                            nbrd.at(r) == 0 ? 1 :
                                             -1;
                                     }
                                     nbrd.put(q, 2+bix);
@@ -190,7 +190,11 @@ int nthbeam = 0;
             next.swap(beam);
             next.clear();
 cerr << "beam " << (nthbeam ++) << " : " << beam.size() << endl;
-cerr << beam.front()->brds.front();
+repeat (i, min<int>(3, beam.size())) {
+    cerr << beam[i]->brds.front();
+    cerr << "evaluate: " << evaluate(*beam[i]) << endl;
+    cerr << "circumference: " << beam[i]->circumference << endl;
+}
         }
         return result;
     }
