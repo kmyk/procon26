@@ -155,6 +155,7 @@ public:
     point_t m_offset[2][4];
     point_t m_size[2][4];
     int m_area;
+    int m_circumference;
     bool m_duplicated[2][4]; // true => you should ignore it
     std::vector<point_t> m_stones[2][4];
     std::vector<int> m_skips[2][4];
@@ -168,6 +169,7 @@ public:
     point_t offset(placement_t const & p) const;
     point_t size(placement_t const & p) const;
     int area() const;
+    int circumference() const;
     int w(flip_t f, rot_t r) const;
     int h(flip_t f, rot_t r) const;
     int w(placement_t const & p) const;
@@ -216,3 +218,8 @@ placement_t initial_placement(block const & blk, point_t const & lp);
 bool next_placement(placement_t & p, block const & blk, point_t const & lp, point_t const & rp);
 
 void update_bounding_box(board const & brd, block const & blk, placement_t const & p, point_t const & lp, point_t const & rp, point_t *nlp, point_t *nrp);
+
+/**
+ * @attention for debug
+ */
+std::ostream & operator << (std::ostream & out, board const & brd);

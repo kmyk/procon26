@@ -51,6 +51,7 @@ private:
                 result = acc;
 #ifdef USE_EXACT
                 g_provisional_result = { result };
+                cerr << brd;
                 cerr << highscore << endl;
 #endif
             }

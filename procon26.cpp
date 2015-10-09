@@ -300,6 +300,17 @@ block::block(block_t const & a) {
             sigs.insert(sig);
         }
     }
+    m_circumference = 0;
+    repeat (i, m_area) {
+        point_t p = m_stones[H][R0][i];
+        repeat (j,4) {
+            auto q = p + dp[j];
+            m_circumference +=
+                not is_on_board(q) ? 1 :
+                m_cell[H][R0] == 0 ? 1 :
+                -1;
+        }
+    }
 }
 
 point_t block::offset(flip_t f, rot_t r) const { return m_offset[f][r]; }
@@ -307,6 +318,7 @@ point_t block::size(flip_t f, rot_t r) const { return m_size[f][r]; }
 point_t block::offset(placement_t const & p) const { assert (p.used); return offset(p.f,p.r); }
 point_t block::size(placement_t const & p) const { assert (p.used); return size(p.f,p.r); }
 int block::area() const { return m_area; }
+int block::circumference() const { return m_circumference; }
 int block::w(flip_t f, rot_t r) const { return size(f,r).x; }
 int block::h(flip_t f, rot_t r) const { return size(f,r).y; }
 int block::w(placement_t const & p) const { return w(p.f,p.r); }
@@ -339,14 +351,15 @@ bool next_placement(placement_t & p, block const & blk, point_t const & lp, poin
         p.p.x = initial_placement(blk, lp, p.f, p.r).p.x;
         p.p.y += 1;
         if (p.p.y >= rp.y + 1 - blk.offset(p.f, p.r).y) {
-            p.r = rot90(p.r);
-            if (p.r == R0) {
-                p.f = flip(p.f);
-                if (p.f == H) {
-                    p.p = initial_placement(blk, lp, p.f, p.r).p;
-                    return false;
+            do {
+                p.r = rot90(p.r);
+                if (p.r == R0) {
+                    p.f = flip(p.f);
+                    if (p.f == H) {
+                        return false;
+                    }
                 }
-            }
+            } while (blk.is_duplicated(p.f, p.r));
             p.p = initial_placement(blk, lp, p.f, p.r).p;
         }
     }
@@ -360,4 +373,24 @@ void update_bounding_box(board const & brd, block const & blk, placement_t const
         *nlp = pwmin(*nlp, lp);
         *nrp = pwmax(*nrp, rp);
     }
+}
+
+std::ostream & operator << (std::ostream & out, board const & brd) {
+    repeat (y, board_size) {
+        repeat (x, board_size) {
+            int n = brd.at({ x, y });
+            if (n == 0) {
+                out << "\x1b[40m  ";
+            } else if (n == 1) {
+                out << "\x1b[47m  ";
+            } else {
+                const char table[] = "0123456789ABCDEF";
+                int a = (n-2)/16;
+                int b = (n-2)%16;
+                out << "\x1b[4" << ((n - 2) % 6 + 1) << "m" << (a == 0 ? ' ' : table[a]) << table[b];
+            }
+        }
+        out << "\x1b[49m" << std::endl;
+    }
+    return out;
 }
