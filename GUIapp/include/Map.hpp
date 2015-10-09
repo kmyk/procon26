@@ -19,6 +19,8 @@ public:
   void put_stone(int,int);
   bool can_put_stone(int,int);
   bool in_area(int,int);
+  int get_score();
+  void preview(int,int);
 };
 
 #endif

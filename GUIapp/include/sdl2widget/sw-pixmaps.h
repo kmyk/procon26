@@ -1,0 +1,97 @@
+static const char *lamp_pm[]={
+"13 12 4 1",
+"# c #606060",
+"a c #a0a0a0",
+"b c #e0e0e0",
+". c None",
+"....###aa....",
+"..#####aaaa..",
+".######aaaaa.",
+".######aaaaa.",
+"#######aaaaaa",
+"#######aaaaaa",
+"#######bbbbbb",
+"aaaaaabbbbbbb",
+".aaaaabbbbbb.",
+".aaaaabbbbbb.",
+"..aaaabbbbb..",
+"....aabbb...."
+};
+
+static const char *rbut_pm[]={
+"13 13 5 1",
+"# c #606060",
+"a c #a0a0a0",
+"b c #e0e0e0",
+"c c #d0d0d0",
+". c None",
+"....###aa....",
+"..#####aaaa..",
+".######aaaaa.",
+".###acccaaaa.",
+"###cccccccaaa",
+"###cccccccaaa",
+"###cccccccaaa",
+"###cccccccbbb",
+"aaacccccccbbb",
+".aaaacccbbbb.",
+".aaaaabbbbbb.",
+"..aaaabbbbb..",
+"....aabbb...."
+};
+
+static const char *arrow[] = {
+  "20 20 3 1",
+  "X c #000000",
+  ". c #ffffff",
+  "  c None",
+  "X                   ",
+  "XX                  ",
+  "X.X                 ",
+  "X..X                ",
+  "X...X               ",
+  "X....X              ",
+  "X.....X             ",
+  "X......X            ",
+  "X.......X           ",
+  "X........X          ",
+  "X.....XXXXX         ",
+  "X..X..X             ",
+  "X.X X..X            ",
+  "XX  X..X            ",
+  "X    X..X           ",
+  "     X..X           ",
+  "      X..X          ",
+  "      X..X          ",
+  "       XX           ",
+  "                    ",
+  "0,0"  // hot spot
+};
+
+static const char *check_xpm[] = {
+"8 8 3 1",
+"  c None",
+"x c #101010",
+"- c #e0e0e0",
+"        ",
+"      xx",
+"     xx ",
+" x   xx ",
+" xx xx- ",
+" xxxxx  ",
+" -xxx-  ",
+"  xxx   "};
+
+static const char *cross_xpm[] = {
+"8 7 3 1",
+"  c None",
+"x c #101010",
+"- c #e0e0e0",
+"xx    xx",
+" xx  xx ",
+"  xxxx  ",
+"   xx   ",
+"  xxxx  ",
+" xx  xx ",
+"xx    xx"};
+

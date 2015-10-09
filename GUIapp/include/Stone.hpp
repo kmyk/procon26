@@ -1,13 +1,28 @@
 #ifndef __STONE_HPP__
 #define __STONE_HPP__
 
+#include <SDL.h>
 class Stone{
 public:
-  bool **geometry;  
+  enum SState{
+    STATE_SELECTED,
+    STATE_PUT,
+    STATE_NONE,
+  };
+private:
+  int pX;
+  int pY;
+  SState state;
+public:
+  bool **geometry;
   static const int row = 8;
   static const int colum = 8;
   Stone();
   ~Stone();
+  void preview(SDL_Renderer*);
+  void set_preview_pos(int,int);
+  void set_stone_state(SState);
+  SState get_stone_state();
 };
 
 #endif

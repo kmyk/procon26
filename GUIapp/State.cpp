@@ -74,8 +74,8 @@ void State::parse_input(){
   ptr++; //nextline
   int base = 10;
   while('0' <= input[ptr] && input[ptr] <= '9'){
-    stone_num += input[ptr];
     stone_num *= base;
+    stone_num += input[ptr] - '0';    
     ptr++;
   }
   ptr++; //nextline

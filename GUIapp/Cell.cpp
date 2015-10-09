@@ -16,9 +16,15 @@ void Cell::draw(SDL_Renderer* renderer){
     if(state == STATE_EMPTY){
       boxRGBA(renderer,x * size + edge,y * size + edge,(x + 1) * size - edge,(y + 1) * size - edge,
               255,255,255,255);
-    }else{
-      boxRGBA(renderer,x * size,y * size,(x + 1) * size,(y + 1) * size,
+    }else if(state == STATE_FILL){
+      boxRGBA(renderer,x * size + edge,y * size + edge,(x + 1) * size - edge,(y + 1) * size - edge,
               0,0,0,255);
+    }else if(state == STATE_EMPTY_P){
+      boxRGBA(renderer,x * size + edge,y * size + edge,(x + 1) * size - edge,(y + 1) * size - edge,
+              192,192,192,255);
+    }else if(state == STATE_FILL_P){
+      boxRGBA(renderer,x * size + edge,y * size + edge,(x + 1) * size - edge,(y + 1) * size - edge,            
+              128,128,128,255);
     }
 
 }
