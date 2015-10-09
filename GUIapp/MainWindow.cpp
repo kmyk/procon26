@@ -5,18 +5,33 @@
 #include "MainWindow.hpp"
 #include "Cell.hpp"
 #include "Utility.hpp"
+#include "State.hpp"
+#include "Stone.hpp"
 
 MainWindow::MainWindow(){
-  win_rect.w = Cell::size * 32;
-  win_rect.h = Cell::size * 32;
+  win_rect.w = Cell::size * (Map::colum + Map::edge * 2);
+  win_rect.h = Cell::size * (Map::row + Map::edge * 2);
   SDL_CreateWindowAndRenderer(win_rect.w, win_rect.h,0,&window,&renderer);
   map = new Map();
   mouse = Mouse::instance();
+  state = State::instance();
+  char filepath[256];
+  sprintf(filepath,"output/quest%d.out",state->now_game);
+  output_fp = fopen(filepath,"w");
+
 }
 MainWindow::~MainWindow(){
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   SAFE_DELETE(map);
+  fclose(output_fp);
+}
+
+void MainWindow::output_res(){
+  Stone* stone = state->stones[state->now_stone];
+  char buf[256];
+  sprintf(buf,"%d %d %c %d\n",stone->x,stone->y,(stone->flip ? 'T' : 'H'),stone->rotate);
+  fwrite(buf,sizeof(char),strlen(buf),output_fp);
 }
 
 void MainWindow::update(){
@@ -28,8 +43,10 @@ void MainWindow::update(){
     if(bevent.type == SDL_MOUSEBUTTONUP){
       int cx = bevent.x / Cell::size;
       int cy = bevent.y / Cell::size;
-      if(map->can_put_stone(cx,cy))
+      if(map->can_put_stone(cx,cy)){
         map->put_stone(cx,cy);
+        output_res();
+      }
     }
   }
   if(mouse->exist_motion_event(win_id)){
@@ -41,10 +58,11 @@ void MainWindow::update(){
       my = cy;
     }
   }
-
+  map->update();
 }
 
 void MainWindow::draw(){
+  SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
   SDL_RenderClear(renderer);
   map->draw(renderer);
   SDL_RenderPresent(renderer);

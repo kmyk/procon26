@@ -1,5 +1,5 @@
 DEBUG		=  "ON"
-OBJS		=	 Main.o GUIapp.o State.o MainWindow.o SubWindow.o Mouse.o Map.o Cell.o Stone.o
+OBJS		=	 Main.o GUIapp.o State.o MainWindow.o SubWindow.o Mouse.o Map.o Cell.o Stone.o Keyboard.o
 
 CURPATH = 	$(shell pwd)
 INCLUDE =		$(CURPATH)/include

@@ -3,9 +3,11 @@
 #include "Map.hpp"
 #include "State.hpp"
 #include "Stone.hpp"
+#include "Keyboard.hpp"
 
 Map::Map(){
   state = State::instance();
+  keyboard = Keyboard::instance();
   cell = new Cell*[row];
   for(int y = 0; y < row; y++){
       cell[y] = new Cell[colum];
@@ -39,8 +41,8 @@ bool Map::can_put_stone(int x,int y){
   for(int sy = 0; sy < Stone::row; sy++){
     for(int sx = 0; sx < Stone::colum; sx++){
       if(stone->geometry[sy][sx]){
-        int nx = x + sx;
-        int ny = y + sy;
+        int nx = x + sx - edge;
+        int ny = y + sy - edge;
         if(!in_area(nx,ny)) return false; //Out of area
         if(cell[ny][nx].is_fill()){ //Overlap
           return false;
@@ -75,19 +77,21 @@ void Map::put_stone(int x,int y){
   Stone* stone = state->stones[state->now_stone];
   for(int sy = 0; sy < Stone::row; sy++){
     for(int sx = 0; sx < Stone::colum; sx++){
-      int nx = x + sx;
-      int ny = y + sy;
-      if(stone->geometry[sy][sx])
+      int nx = x + sx - edge;
+      int ny = y + sy - edge;
+      if(stone->geometry[sy][sx]){
         cell[ny][nx].set_fill();
+      }
     }
   }
+  state->stones[state->now_stone]->set_put_pos(x - edge,y - edge);
   state->stones[state->now_stone]->set_stone_state(Stone::STATE_PUT);
   int score = get_score();
   printf("Fill: %d\tSpace: %d\n",row * colum - score,score);
 }
 
-void Map::preview(int x,int y){
-  if(x < 0 || y < 0) return;
+void Map::preview(int _x,int _y){
+  if(_x < 0 || _y < 0) return;
   for(int y = 0; y < row; y++){
     for(int x = 0; x < colum; x++){
       if(cell[y][x].is_fill_p() || cell[y][x].is_empty_p()) cell[y][x].set_empty();
@@ -96,8 +100,8 @@ void Map::preview(int x,int y){
   Stone* stone = state->stones[state->now_stone];
   for(int sy = 0; sy < Stone::row; sy++){
     for(int sx = 0; sx < Stone::colum; sx++){
-      int nx = x + sx;
-      int ny = y + sy;
+      int nx = _x + sx - edge;
+      int ny = _y + sy - edge;
       if(!in_area(nx,ny)) continue;
       if(stone->geometry[sy][sx])
         cell[ny][nx].set_fill_p();
@@ -107,6 +111,16 @@ void Map::preview(int x,int y){
   }
 }
 void Map::update(){
+  if(keyboard->is_keyon(SDLK_SPACE)){
+    keyboard->keytoggle(SDLK_SPACE);
+    Stone* stone = state->stones[state->now_stone];
+    stone->stone_rotate90();
+  }
+  if(keyboard->is_keyon(SDLK_TAB)){
+    keyboard->keytoggle(SDLK_TAB);    
+    Stone* stone = state->stones[state->now_stone];
+    stone->stone_flip();
+  }
 
 }
 

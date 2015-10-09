@@ -9,14 +9,17 @@
 #include "GUIapp.hpp"
 #include "Utility.hpp"
 #include "Mouse.hpp"
+#include "Keyboard.hpp"
 #include "SubWindow.hpp"
 
 GUIapp::GUIapp(){
   SDL_Init(SDL_INIT_EVERYTHING);
   State::create();
   Mouse::create();
+  Keyboard::create();
   state = State::instance();
   mouse = Mouse::instance();
+  keyboard = Keyboard::instance();
   state->load_input();
   state->parse_input();
   main_window = new MainWindow();
@@ -27,6 +30,7 @@ GUIapp::~GUIapp(){
   SAFE_DELETE(sub_window);
   Mouse::destroy();
   State::destroy();
+  Keyboard::destroy();
 }
 
 bool GUIapp::polling_event(void){
@@ -52,6 +56,18 @@ bool GUIapp::polling_event(void){
         mouse->add_motion_event(ev.window.windowID,ev.motion);
         break;
       }
+      case SDL_KEYDOWN:
+      {
+        //printf("key down\n");
+        keyboard->keyon(ev.key.keysym.sym);
+        break;
+      }
+      case SDL_KEYUP:
+      {
+        keyboard->keyoff(ev.key.keysym.sym);
+        break;
+      }
+
     }
   }
   return true;

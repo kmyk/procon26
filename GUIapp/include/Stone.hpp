@@ -17,11 +17,18 @@ public:
   bool **geometry;
   static const int row = 8;
   static const int colum = 8;
+  int x;
+  int y;
+  bool flip;
+  int rotate;
   Stone();
   ~Stone();
   void preview(SDL_Renderer*);
   void set_preview_pos(int,int);
+  void set_put_pos(int,int);
   void set_stone_state(SState);
+  void stone_flip();
+  void stone_rotate90();
   SState get_stone_state();
 };
 
