@@ -4,6 +4,7 @@
 #include <SDL.h>
 class Map;
 class Mouse;
+class State;
 
 class MainWindow{
 private:
@@ -12,11 +13,14 @@ private:
   SDL_Rect win_rect;
   Map* map;
   Mouse* mouse;
+  FILE* output_fp;
+  State* state;
 public:
   MainWindow();
   ~MainWindow();
   void draw();
   void update();
+  void output_res();
 };
 
 #endif

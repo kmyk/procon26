@@ -5,13 +5,17 @@
 class Cell;
 class Object;
 class State;
+class Keyboard;
+
 class Map : public Object{
 private:
   Cell** cell;
   State* state;
+  Keyboard* keyboard;
 public:
   static const int colum = 32;
   static const int row = 32;
+  static const int edge = 7;
   Map();
   ~Map();
   void update();
