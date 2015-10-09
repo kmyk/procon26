@@ -19,16 +19,30 @@ void Mouse::destroy(){
   SAFE_DELETE(mInstance);
 }
 
-bool Mouse::exist_button_event(){
-  return !button_events.empty();
+bool Mouse::exist_button_event(Uint32 key){
+  return !button_events[key].empty();
 }
 
-SDL_MouseButtonEvent Mouse::get_button_event(){
-  SDL_MouseButtonEvent topevent = button_events.front();
-  button_events.pop_front();
+SDL_MouseButtonEvent Mouse::get_button_event(Uint32 key){
+  SDL_MouseButtonEvent topevent = button_events[key].front();
+  button_events[key].pop_front();
   return topevent;
 }
 
-void Mouse::add_button_event(SDL_MouseButtonEvent _event){
-  button_events.push_back(_event);
+void Mouse::add_button_event(Uint32 key,SDL_MouseButtonEvent _event){
+  button_events[key].push_back(_event);
+}
+
+bool Mouse::exist_motion_event(Uint32 key){
+  return !motion_events[key].empty();
+}
+
+SDL_MouseMotionEvent Mouse::get_motion_event(Uint32 key){
+  SDL_MouseMotionEvent topevent = motion_events[key].front();
+  motion_events[key].pop_front();
+  return topevent;
+}
+
+void Mouse::add_motion_event(Uint32 key,SDL_MouseMotionEvent _event){
+  motion_events[key].push_back(_event);
 }

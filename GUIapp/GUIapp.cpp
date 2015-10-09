@@ -38,13 +38,18 @@ bool GUIapp::polling_event(void){
         break;
       case SDL_MOUSEBUTTONDOWN:
       {
-        mouse->add_button_event(ev.button);
+        mouse->add_button_event(ev.window.windowID,ev.button);
         //if(key == SDLK_ESCAPE){ return false; }
       }
         break;
       case SDL_MOUSEBUTTONUP:
       {
-        mouse->add_button_event(ev.button);
+        mouse->add_button_event(ev.window.windowID,ev.button);
+        break;
+      }
+      case SDL_MOUSEMOTION:
+      {
+        mouse->add_motion_event(ev.window.windowID,ev.motion);
         break;
       }
     }
@@ -58,7 +63,7 @@ void GUIapp::update(){
 }
 void GUIapp::draw(){
   main_window->draw();
-  sub_window->draw();    
+  sub_window->draw();
 }
 
 void GUIapp::main_loop(){

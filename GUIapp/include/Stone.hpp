@@ -3,9 +3,16 @@
 
 #include <SDL.h>
 class Stone{
+public:
+  enum SState{
+    STATE_SELECTED,
+    STATE_PUT,
+    STATE_NONE,
+  };
 private:
   int pX;
   int pY;
+  SState state;
 public:
   bool **geometry;
   static const int row = 8;
@@ -14,6 +21,8 @@ public:
   ~Stone();
   void preview(SDL_Renderer*);
   void set_preview_pos(int,int);
+  void set_stone_state(SState);
+  SState get_stone_state();
 };
 
 #endif

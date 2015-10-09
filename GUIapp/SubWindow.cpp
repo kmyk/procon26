@@ -6,6 +6,7 @@
 #include "State.hpp"
 #include "Utility.hpp"
 #include "Cell.hpp"
+#include "Stone.hpp"
 
 SubWindow::SubWindow(){
   win_rect.w = (Stone::colum + interval) * Cell::size * colum;
@@ -31,9 +32,23 @@ void SubWindow::init_preview(){
   }
 }
 void SubWindow::update(){
-  if(mouse->exist_button_event()){
-    SDL_MouseButtonEvent bevent = mouse->get_button_event();
+  Uint32 win_id = SDL_GetWindowID(window);
+  if(mouse->exist_button_event(win_id)){
+    SDL_MouseButtonEvent bevent = mouse->get_button_event(win_id);
     if(bevent.type == SDL_MOUSEBUTTONUP){
+      int mx = bevent.x;
+      int my = bevent.y;
+      int px = mx / ((Stone::colum + interval) * Cell::size);
+      int py = my / ((Stone::row + interval) * Cell::size);
+      int s_index = py * colum + px;
+      if(state->stones[s_index]->get_stone_state() != Stone::STATE_PUT){
+        for(int s = 0; s < state->stone_num; s++){
+          if(state->stones[s]->get_stone_state() == Stone::STATE_SELECTED)
+            state->stones[s]->set_stone_state(Stone::STATE_NONE);
+        }
+        state->stones[s_index]->set_stone_state(Stone::STATE_SELECTED);
+        state->now_stone = s_index;
+      }
     }
   }
 }

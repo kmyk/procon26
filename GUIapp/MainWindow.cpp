@@ -20,8 +20,11 @@ MainWindow::~MainWindow(){
 }
 
 void MainWindow::update(){
-  if(mouse->exist_button_event()){
-    SDL_MouseButtonEvent bevent = mouse->get_button_event();
+  Uint32 win_id = SDL_GetWindowID(window);
+  static int mx = -1,my = -1;
+  map->preview(mx,my);
+  if(mouse->exist_button_event(win_id)){
+    SDL_MouseButtonEvent bevent = mouse->get_button_event(win_id);
     if(bevent.type == SDL_MOUSEBUTTONUP){
       int cx = bevent.x / Cell::size;
       int cy = bevent.y / Cell::size;
@@ -29,6 +32,16 @@ void MainWindow::update(){
         map->put_stone(cx,cy);
     }
   }
+  if(mouse->exist_motion_event(win_id)){
+    SDL_MouseMotionEvent mevent = mouse->get_motion_event(win_id);
+    if(mevent.type == SDL_MOUSEMOTION){
+      int cx = mevent.x / Cell::size;
+      int cy = mevent.y / Cell::size;
+      mx = cx;
+      my = cy;
+    }
+  }
+
 }
 
 void MainWindow::draw(){
