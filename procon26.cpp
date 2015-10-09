@@ -339,14 +339,15 @@ bool next_placement(placement_t & p, block const & blk, point_t const & lp, poin
         p.p.x = initial_placement(blk, lp, p.f, p.r).p.x;
         p.p.y += 1;
         if (p.p.y >= rp.y + 1 - blk.offset(p.f, p.r).y) {
-            p.r = rot90(p.r);
-            if (p.r == R0) {
-                p.f = flip(p.f);
-                if (p.f == H) {
-                    p.p = initial_placement(blk, lp, p.f, p.r).p;
-                    return false;
+            do {
+                p.r = rot90(p.r);
+                if (p.r == R0) {
+                    p.f = flip(p.f);
+                    if (p.f == H) {
+                        return false;
+                    }
                 }
-            }
+            } while (blk.is_duplicated(p.f, p.r));
             p.p = initial_placement(blk, lp, p.f, p.r).p;
         }
     }
