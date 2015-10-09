@@ -12,7 +12,7 @@
 #include "Keyboard.hpp"
 #include "SubWindow.hpp"
 
-GUIapp::GUIapp(){
+GUIapp::GUIapp(int game){
   SDL_Init(SDL_INIT_EVERYTHING);
   State::create();
   Mouse::create();
@@ -20,6 +20,7 @@ GUIapp::GUIapp(){
   state = State::instance();
   mouse = Mouse::instance();
   keyboard = Keyboard::instance();
+  state->now_game = game;  
   state->load_input();
   state->parse_input();
   main_window = new MainWindow();
