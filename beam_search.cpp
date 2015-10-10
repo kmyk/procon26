@@ -1,4 +1,4 @@
-#include "forward.hpp"
+#include "beam_search.hpp"
 #include <vector>
 #include <algorithm>
 #include <set>
@@ -7,7 +7,7 @@
 #include <cassert>
 #include "procon26.hpp"
 #include "exact.hpp"
-#ifdef USE_FORWARD
+#ifdef USE_BEAM_SEARCH
 #include "signal.hpp"
 #endif
 using namespace std;
@@ -52,14 +52,14 @@ bool photon_ptr_comparator(photon_ptr const & a, photon_ptr const & b) {
     return *a < *b;
 }
 
-class forward_solver {
+class beam_search_solver {
     board brd; // immutable
     vector<block> blks; // immutable
     vector<placement_t> result;
     int highscore;
     const int beam_width;
 public:
-    explicit forward_solver(int a_beam_width)
+    explicit beam_search_solver(int a_beam_width)
             : beam_width(a_beam_width) {
         highscore = -1;
     }
@@ -90,7 +90,7 @@ int nthbeam = 0;
                 if (pho.score < highscore) {
                     highscore = pho.score;
                     result = pho.plc;
-#ifdef USE_FORWARD
+#ifdef USE_BEAM_SEARCH
                     g_provisional_result = { result };
                     cerr << highscore << endl;
 #endif
@@ -162,10 +162,10 @@ repeat (i, min<int>(3, beam.size())) {
     }
 };
 
-vector<placement_t> forward(board const & brd, std::vector<block> const & blks, int beam_width) {
-    return forward_solver(beam_width)(brd, blks);
+vector<placement_t> beam_search(board const & brd, std::vector<block> const & blks, int beam_width) {
+    return beam_search_solver(beam_width)(brd, blks);
 }
 
-vector<placement_t> forward(board const & brd, std::vector<block> const & blks) {
-    return forward(brd, blks, 1024);
+vector<placement_t> beam_search(board const & brd, std::vector<block> const & blks) {
+    return beam_search(brd, blks, 1024);
 }
