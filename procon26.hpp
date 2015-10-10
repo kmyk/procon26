@@ -110,7 +110,9 @@ public:
      * @brief offsetとsize等を更新
      */
     void shrink();
-    [[deprecated]]
+    /**
+     * @attention 遅い
+     */
     std::vector<board> split() const;
 public:
     /**

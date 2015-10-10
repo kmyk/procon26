@@ -22,7 +22,7 @@ using namespace std;
  */
 
 struct photon_t {
-    vector<board> brds;
+    board brd;
     int score; // or remaining_area
     int circumference;
     int dead_area;
@@ -52,38 +52,6 @@ bool photon_ptr_comparator(photon_ptr const & a, photon_ptr const & b) {
     return *a < *b;
 }
 
-void exact(photon_t & pho, board brd, vector<block> const & blks) {
-    vector<block> xs;
-    repeat_from (i, pho.bix, blks.size()) if (not pho.plc[i].used) {
-        xs.push_back(blks[i]);
-    }
-    if (xs.empty()) return;
-    vector<placement_t> ys = exact(brd, xs);
-    int j = 0;
-    assert (pho.score >= 0);
-    repeat_from (i, pho.bix, blks.size()) if (not pho.plc[i].used) {
-        placement_t const & p = ys[j ++];
-        if (not p.used) continue;
-        pho.plc[i] = p;
-        block const & blk = blks[i];
-        pho.score -= blk.area();
-        repeat (j, blk.area()) {
-            point_t q = blk.stones(p.f,p.r)[j] + p.p;
-            repeat (i,4) {
-                auto r = q + dp[i];
-                pho.circumference +=
-                    not is_on_board(r) ? 1 :
-                    brd.at(q) == 0 ? 1 :
-                    -1;
-            }
-            brd.put(q, 2+i);
-        }
-    }
-    assert (pho.score >= 0);
-    brd.update();
-    pho.dead_area += brd.area();
-}
-
 class forward_solver {
     board brd; // immutable
     vector<block> blks; // immutable
@@ -104,7 +72,7 @@ public:
         for (auto && brd : a_brd.split()) {
             photon_ptr ppho = make_shared<photon_t>();
             photon_t & pho = *ppho;
-            pho.brds.push_back(brd);
+            pho.brd = brd;
             pho.score = a_brd.area();
             pho.circumference = 0; // 相対的なもののみ気にする
             pho.dead_area = a_brd.area() - brd.area();
@@ -140,55 +108,37 @@ int nthbeam = 0;
                         next.push_back(npho);
                     }
                     bool is_just_used = false; // ぴったり嵌るような使われ方をしたか
-                    int l = pho.brds.size();
-                    repeat (bjx, l) {
-                        board const & brd = pho.brds[bjx];
-                        placement_t p = initial_placement(blk, brd.stone_offset());
-                        do {
-                            int skip;
-                            if (brd.is_puttable(blk, p, 2+bix, &skip)) {
-                                photon_ptr pnpho = make_shared<photon_t>();
-                                *pnpho = pho;
-                                photon_t & npho = *pnpho;
-                                npho.plc[bix] = p;
-                                npho.bix = bix + 1;
-                                npho.score -= blk.area();
-                                npho.remaining_stone -= blk.area();
-                                board nbrd = brd;
-                                repeat (j, blk.area()) {
-                                    point_t q = blk.stones(p.f,p.r)[j] + p.p;
-                                    repeat (i,4) {
-                                        auto r = q + dp[i];
-                                        npho.circumference +=
-                                            not is_on_board(r) ? -1 :
-                                            nbrd.at(r) == 0 ? 1 :
-                                            -1;
-                                    }
-                                    nbrd.put(q, 2+bix);
+                    placement_t p = initial_placement(blk, pho.brd.stone_offset());
+                    do {
+                        int skip;
+                        if (pho.brd.is_puttable(blk, p, 2+bix, &skip)) {
+                            photon_ptr pnpho = make_shared<photon_t>();
+                            *pnpho = pho;
+                            photon_t & npho = *pnpho;
+                            npho.plc[bix] = p;
+                            npho.bix = bix + 1;
+                            npho.score -= blk.area();
+                            npho.remaining_stone -= blk.area();
+                            repeat (j, blk.area()) {
+                                point_t q = blk.stones(p.f,p.r)[j] + p.p;
+                                repeat (i,4) {
+                                    auto r = q + dp[i];
+                                    npho.circumference +=
+                                        not is_on_board(r) ? -1 :
+                                        npho.brd.at(r) == 0 ? 1 :
+                                        -1;
                                 }
-                                if (pho.circumference - npho.circumference == blk.circumference()) {
-                                    if (is_just_used) continue;
-                                    is_just_used = true;
-                                }
-                                nbrd.update();
-#if 0
-                                if (bjx != l - 1) npho.brds[bjx] = npho.brds[l - 1];
-                                npho.brds.pop_back();
-                                for (auto && it : nbrd.split()) {
-                                    if (it.area() <= exact_limit) {
-                                        exact(npho, it, blks);
-                                    } else {
-                                        npho.brds.push_back(it);
-                                    }
-                                }
-#else
-                                npho.brds[bjx] = nbrd;
-#endif
-                                next.push_back(pnpho);
+                                npho.brd.put(q, 2+bix);
                             }
-                            p.p.x += skip - 1;
-                        } while (next_placement(p, blk, brd.stone_offset(), brd.stone_offset() + brd.stone_size()));
-                    }
+                            if (pho.circumference - npho.circumference == blk.circumference()) {
+                                if (is_just_used) continue;
+                                is_just_used = true;
+                            }
+                            npho.brd.update();
+                            next.push_back(pnpho);
+                        }
+                        p.p.x += skip - 1;
+                    } while (next_placement(p, blk, pho.brd.stone_offset(), pho.brd.stone_offset() + pho.brd.stone_size()));
                 }
                 if (beam_width * 10 < next.size()) {
                     sort(next.rbegin(), next.rend(), &photon_ptr_comparator);
@@ -202,7 +152,7 @@ int nthbeam = 0;
             next.clear();
 cerr << "beam " << (nthbeam ++) << " : " << beam.size() << endl;
 repeat (i, min<int>(3, beam.size())) {
-    cerr << beam[i]->brds.front();
+    cerr << beam[i]->brd;
     cerr << "score: " << beam[i]->score << endl;
     cerr << "evaluate: " << evaluate(*beam[i]) << endl;
     cerr << "circumference: " << beam[i]->circumference << endl;
