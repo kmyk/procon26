@@ -23,10 +23,11 @@ using namespace std;
 
 struct photon_t {
     vector<board> brds;
-    int score;
+    int score; // or remaining_area
     int circumference;
     int dead_area;
     int dead_stone;
+    int remaining_stone;
     vector<placement_t> plc;
     int bix; // current block
 };
@@ -107,6 +108,8 @@ public:
             pho.score = a_brd.area();
             pho.circumference = 0; // 相対的なもののみ気にする
             pho.dead_area = a_brd.area() - brd.area();
+            pho.remaining_stone = 0;
+            for (auto && blk : blks) pho.remaining_stone += blk.area();
             pho.plc.resize(n, { false });
             pho.bix = 0;
             beam.push_back(ppho);
@@ -133,6 +136,7 @@ int nthbeam = 0;
                         *npho = pho;
                         npho->bix = bix + 1;
                         npho->dead_stone += blk.area();
+                        npho->remaining_stone -= blk.area();
                         next.push_back(npho);
                     }
                     bool is_just_used = false; // ぴったり嵌るような使われ方をしたか
@@ -149,6 +153,7 @@ int nthbeam = 0;
                                 npho.plc[bix] = p;
                                 npho.bix = bix + 1;
                                 npho.score -= blk.area();
+                                npho.remaining_stone -= blk.area();
                                 board nbrd = brd;
                                 repeat (j, blk.area()) {
                                     point_t q = blk.stones(p.f,p.r)[j] + p.p;
