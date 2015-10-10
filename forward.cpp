@@ -39,9 +39,8 @@ double evaluate(photon_t const & a) {
     double q = 1 - p;
     return
         - a.circumference * (8 * q)
-        - a.score * (32 + 32 * p)
-        - a.dead_area * (8 * q)
-        - a.dead_stone * (16 * q);
+        - a.score * (12 * p)
+        - max(0.0, a.score - a.remaining_stone * 0.8) * 64;
 }
 
 // larger iff better
