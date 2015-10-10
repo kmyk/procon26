@@ -1,7 +1,9 @@
 #include "beam_search.hpp"
 #include <vector>
 #include <algorithm>
+#include <stack>
 #include <set>
+#include <iterator>
 #include <unordered_set>
 #include <memory>
 #include <cassert>
@@ -31,6 +33,7 @@ struct photon_t {
     int remaining_stone;
     vector<placement_t> plc;
     int bix; // current block
+    double bonus;
 };
 typedef shared_ptr<photon_t> photon_ptr;
 
@@ -40,7 +43,8 @@ double evaluate(photon_t const & a) {
     return
         - a.circumference * (8 * q)
         - a.score * (12 * p)
-        - max(0.0, a.score - a.remaining_stone * 0.8) * 64;
+        - max(0.0, a.score - a.remaining_stone * 0.8) * 64
+        + a.bonus;
 }
 
 // larger iff better
@@ -80,6 +84,7 @@ public:
             for (auto && blk : blks) pho.remaining_stone += blk.area();
             pho.plc.resize(n, { false });
             pho.bix = 0;
+            pho.bonus = 0;
             beam.push_back(ppho);
         }
 int nthbeam = 0;
@@ -135,6 +140,44 @@ int nthbeam = 0;
                                 is_just_used = true;
                             }
                             npho.brd.update();
+                            vector<point_t> neighbors;
+                            repeat (j, blk.area()) {
+                                point_t q = blk.stones(p.f,p.r)[j] + p.p;
+                                repeat (i,4) {
+                                    auto r = q + dp[i];
+                                    if (is_on_board(r) and npho.brd.at(r) == 0) {
+                                        neighbors.push_back(r);
+                                    }
+                                }
+                            }
+                            set<point_t> used;
+                            for (point_t q : neighbors) {
+                                if (used.count(q)) continue;
+                                set<point_t> current;
+                                current.insert(q);
+                                int n = 1;
+                                stack<point_t> stk;
+                                stk.push(q);
+                                while (not stk.empty()) {
+                                    point_t r = stk.top(); stk.pop();
+                                    repeat (i,4) {
+                                        auto s = r + dp[i];
+                                        if (used.count(s)) {
+                                            n = 1000000007;
+                                            break;
+                                        }
+                                        if (not current.count(s) and is_on_board(s) and npho.brd.at(s) == 0) {
+                                            current.insert(s);
+                                            stk.push(s);
+                                            n += 1;
+                                        }
+                                    }
+                                    if (5 <= n) break;
+                                }
+                                const int table[6] = { 0, 8, 4, 2, 1, 0 };
+                                npho.bonus -= table[min(5, n)] * 64;
+                                copy(current.begin(), current.end(), inserter(used, used.begin()));
+                            }
                             next.push_back(pnpho);
                         }
                         p.p.x += skip - 1;
