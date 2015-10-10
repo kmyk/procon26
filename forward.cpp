@@ -59,7 +59,6 @@ class forward_solver {
     vector<placement_t> result;
     int highscore;
     const int beam_width;
-    unordered_set<vector<bool> > used;
 public:
     explicit forward_solver(int a_beam_width)
             : beam_width(a_beam_width) {
@@ -83,7 +82,6 @@ public:
             pho.plc.resize(n, { false });
             pho.bix = 0;
             beam.push_back(ppho);
-            used.insert(brd.packed());
         }
 int nthbeam = 0;
         vector<photon_ptr> next;
@@ -138,10 +136,6 @@ int nthbeam = 0;
                                 is_just_used = true;
                             }
                             npho.brd.update();
-                            npho.brd.shrink();
-                            vector<bool> packed = npho.brd.packed();
-                            if (used.count(packed)) continue; // 置いた結果、既に作ったものと同じになるなら無視
-                            used.insert(packed);
                             next.push_back(pnpho);
                         }
                         p.p.x += skip - 1;
@@ -154,6 +148,7 @@ int nthbeam = 0;
             }
             sort(next.rbegin(), next.rend(), &photon_ptr_comparator);
             if (beam_width < next.size()) next.resize(beam_width);
+            for (auto && ppho : next) ppho->brd.shrink();
             next.swap(beam);
             next.clear();
 cerr << "beam " << (nthbeam ++) << " : " << beam.size() << endl;
