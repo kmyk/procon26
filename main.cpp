@@ -42,16 +42,17 @@ int main() {
 #if defined USE_EXACT
     output_t b = { exact(brd, blks) };
 #elif defined USE_FORWARD
-    clock_t start = clock();
+#ifdef FORWARD_TIME
 #define TEST_WIDTH 128
+    clock_t start = clock();
     forward(brd, blks, TEST_WIDTH);
     clock_t clock_per_width = (clock() - start) / TEST_WIDTH;
     double sec_per_width = clock_per_width /(double) CLOCKS_PER_SEC;
-#ifndef FORWARD_TIME
-#error time is not given
-#endif
     int width = min<int>(8192, (FORWARD_TIME * 60 / sec_per_width - TEST_WIDTH) * 0.95);
     cerr << "measured: " << sec_per_width << " sec/width" << endl;
+#else
+    int width = 2048;
+#endif
     cerr << "start with width: " <<  width << endl;
     output_t b = { forward(brd, blks, width) };
 #else
