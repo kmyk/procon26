@@ -14,8 +14,8 @@ private:
   State* state;
 public:
   static const int interval = 1;
-  static const int row = 4;
-  static const int colum = 3;
+  static const int row = 5;
+  static const int colum = 5;
   SubWindow();
   ~SubWindow();
   void init_preview();
