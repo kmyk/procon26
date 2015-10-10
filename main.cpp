@@ -51,7 +51,7 @@ int main() {
     int width = min<int>(8192, (FORWARD_TIME * 60 / sec_per_width - TEST_WIDTH) * 0.95);
     cerr << "measured: " << sec_per_width << " sec/width" << endl;
 #else
-    int width = 2048;
+    int width = 1048;
 #endif
     cerr << "start with width: " <<  width << endl;
     output_t b = { forward(brd, blks, width) };
