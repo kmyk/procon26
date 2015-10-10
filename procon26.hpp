@@ -143,6 +143,7 @@ public:
      * @return どこまでずらしてもだめならはみ出る値が返る
      */
     int skip(point_t p) const;
+    std::vector<bool> packed() const;
 };
 
 /**

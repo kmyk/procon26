@@ -249,6 +249,23 @@ std::vector<board> board::split() const {
     return result;
 }
 
+std::vector<bool> board::packed() const {
+    int n = std::max(m_size.y, m_size.x);
+    // int n = board_size;
+    std::vector<bool> p(n * n);
+    repeat (y, m_size.y) {
+    // repeat (y, n) {
+        repeat (x, m_size.x) {
+        // repeat (x, n) {
+            if (m_cell[y + m_offset.y][x + m_offset.x]) {
+            // if (m_cell[y][x]) {
+                p[y * n + x] = true;
+            }
+        }
+    }
+    return p;
+}
+
 
 block::block() = default;
 block::block(block_t const & a) {
