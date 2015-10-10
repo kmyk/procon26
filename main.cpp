@@ -48,7 +48,7 @@ int main() {
     beam_search(brd, blks, TEST_WIDTH);
     clock_t clock_per_width = (clock() - start) / TEST_WIDTH;
     double sec_per_width = clock_per_width /(double) CLOCKS_PER_SEC;
-    int width = min<int>(8192, (BEAM_SEARCH_TIME * 60 / sec_per_width - TEST_WIDTH) * 0.95);
+    int width = min<int>(16384, (BEAM_SEARCH_TIME * 60 / sec_per_width - TEST_WIDTH) * 0.95);
     cerr << "measured: " << sec_per_width << " sec/width" << endl;
 #else
     int width = 1048;
