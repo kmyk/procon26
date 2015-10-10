@@ -60,6 +60,7 @@ void State::load_input(){
   fclose(fp);
   EXCEPT_NORMAL_END;
 }
+static int nextline = 2;
 void State::parse_input(){
   /* >>>> Super f*cking DIRTY code. I'm too lazy to build parser class;-) <<<< */
   for(int i = 0; i < input_size; i++) printf("%c",input[i]);
@@ -69,16 +70,19 @@ void State::parse_input(){
       map_geo[y][x] = (input[ptr] == '1' ? true : false);
       ptr++;
     }
-    ptr++;
+    ptr += nextline;
   }
-  ptr++; //nextline
+  ptr += nextline; //nextline
+  stone_num = 0;
   int base = 10;
   while('0' <= input[ptr] && input[ptr] <= '9'){
+    printf("%c",input[ptr]);
     stone_num *= base;
-    stone_num += input[ptr] - '0';    
+    stone_num += input[ptr] - '0';
     ptr++;
   }
-  ptr++; //nextline
+  printf("\nstone_num:%d\n",stone_num);
+  ptr += nextline; //nextline
   for(int s = 0; s < stone_num; s++){
     stones.push_back(new Stone());
     for(int y = 0; y < Stone::row; y++){
@@ -87,8 +91,8 @@ void State::parse_input(){
           stones[stones.size() - 1]->geometry[y][x] = true;
         ptr++;
       }
-      ptr++;
+      ptr += nextline;
     }
-    ptr++;
+    ptr += nextline;
   }
 }
