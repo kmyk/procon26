@@ -3,6 +3,9 @@
 SOLVER ?= exact
 CXXFLAGS += -std=c++14 -Wall -DSOLVER=${SOLVER} -DUSE_$(shell echo ${SOLVER} | tr a-z A-Z) -lboost_system -lboost_filesystem
 SRCS = forward.cpp exact.cpp procon26.cpp common.cpp
+ifdef TIME
+    CXXFLAGS += -DFORWARD_TIME=${TIME}
+endif
 ifdef DEBUG
     CXXFLAGS += -g -DDEBUG -D_GLIBCXX_DEBUG
 endif

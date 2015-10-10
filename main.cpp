@@ -32,7 +32,6 @@ void signal_handler(int param) {
     exit(param);
 }
 
-#ifdef SOLVER
 int main() {
     ios_base::sync_with_stdio(false);
     input_t a; cin >> a;
@@ -40,10 +39,26 @@ int main() {
     board brd = board(a.board);
     vector<block> blks(n); repeat (i,n) blks[i] = block(a.blocks[i]);
     signal(SIGINT, &signal_handler);
-    output_t b = { SOLVER(brd, blks) };
+#if defined USE_EXACT
+    output_t b = { exact(brd, blks) };
+#elif defined USE_FORWARD
+    clock_t start = clock();
+#define TEST_WIDTH 128
+    forward(brd, blks, TEST_WIDTH);
+    clock_t clock_per_width = (clock() - start) / TEST_WIDTH;
+    double sec_per_width = clock_per_width /(double) CLOCKS_PER_SEC;
+#ifndef FORWARD_TIME
+#error time is not given
+#endif
+    int width = min<int>(8192, (FORWARD_TIME * 60 / sec_per_width - TEST_WIDTH) * 0.95);
+    cerr << "measured: " << sec_per_width << " sec/width" << endl;
+    cerr << "start with width: " <<  width << endl;
+    output_t b = { forward(brd, blks, width) };
+#else
+#error solver is not given
+#endif
     signal(SIGINT, SIG_DFL);
     cout << b;
     export_to_file(b);
     return 0;
 }
-#endif

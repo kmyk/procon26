@@ -51,9 +51,6 @@ bool photon_ptr_comparator(photon_ptr const & a, photon_ptr const & b) {
     return *a < *b;
 }
 
-constexpr int beam_width = 1024;
-constexpr int exact_limit = 18;
-
 void exact(photon_t & pho, board brd, vector<block> const & blks) {
     vector<block> xs;
     repeat_from (i, pho.bix, blks.size()) if (not pho.plc[i].used) {
@@ -91,8 +88,12 @@ class forward_solver {
     vector<block> blks; // immutable
     vector<placement_t> result;
     int highscore;
+    const int beam_width;
 public:
-    forward_solver() = default;
+    explicit forward_solver(int a_beam_width)
+            : beam_width(a_beam_width) {
+        highscore = -1;
+    }
 
 public:
     vector<placement_t> operator () (board const & a_brd, vector<block> const & blks) {
@@ -206,6 +207,10 @@ repeat (i, min<int>(3, beam.size())) {
     }
 };
 
+vector<placement_t> forward(board const & brd, std::vector<block> const & blks, int beam_width) {
+    return forward_solver(beam_width)(brd, blks);
+}
+
 vector<placement_t> forward(board const & brd, std::vector<block> const & blks) {
-    return forward_solver()(brd, blks);
+    return forward(brd, blks, 1024);
 }
