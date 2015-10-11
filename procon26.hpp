@@ -164,6 +164,7 @@ public:
     bool m_duplicated[2][4]; // true => you should ignore it
     std::vector<point_t> m_stones[2][4];
     std::vector<int> m_skips[2][4];
+    uint64_t m_signature;
 public:
     block();
     explicit block(block_t const & a);
@@ -202,6 +203,7 @@ public:
      * @return その点で障害物と衝突した際、次にx方向にいくらずらせばよいか
      */
     std::vector<int> const & skips(flip_t f, rot_t r) const;
+    uint64_t signature() const;
 };
 
 bool is_intersect(board const & brd, block const & blk, placement_t const & p);
@@ -228,3 +230,28 @@ void update_bounding_box(board const & brd, block const & blk, placement_t const
  * @attention for debug
  */
 std::ostream & operator << (std::ostream & out, board const & brd);
+
+/*
+ * 1 1
+ * 2 11
+ * 3 111
+ *    1
+ * 4 11
+ * 5 1111
+ *     1
+ * 6 111
+ *    1
+ * 7 111
+ *   11
+ * 8 11
+ */
+const uint64_t block_signatures[] = {
+    9223372036854775808ull,
+    9259400833873739776ull,
+    9259541571362095104ull,
+    4665729213955833856ull,
+    9259542121117908992ull,
+    2368893403996880896ull,
+    4665799582700011520ull,
+    13889101250810609664ull,
+};

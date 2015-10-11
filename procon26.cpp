@@ -308,6 +308,7 @@ block::block(block_t const & a) {
             sigs.insert(sig);
         }
     }
+    m_signature = *sigs.begin();
     m_circumference = 0;
     repeat (i, m_area) {
         point_t p = m_stones[H][R0][i];
@@ -344,6 +345,7 @@ std::vector<point_t> block::stones(placement_t const & p) const {
     return qs;
 }
 std::vector<int> const & block::skips(flip_t f, rot_t r) const { return m_skips[f][r]; }
+uint64_t block::signature() const { return m_signature; }
 
 
 placement_t initial_placement(block const & blk, point_t const & lp, flip_t f, rot_t r) {
