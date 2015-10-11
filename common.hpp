@@ -63,3 +63,5 @@ bool is_on(point_t const & p, point_t const & size);
 bool is_on_board(point_t const & p);
 point_t pwmin(point_t const & a, point_t const & b);
 point_t pwmax(point_t const & a, point_t const & b);
+int cross(point_t const & a, point_t const & b);
+int   dot(point_t const & a, point_t const & b);

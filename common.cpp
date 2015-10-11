@@ -70,3 +70,10 @@ point_t pwmin(point_t const & a, point_t const & b) {
 point_t pwmax(point_t const & a, point_t const & b) {
     return (point_t) { std::max(a.x, b.x), std::max(a.y, b.y) };
 }
+
+int cross(point_t const & a, point_t const & b) {
+    return a.x * b.y - a.y * b.x;
+}
+int   dot(point_t const & a, point_t const & b) {
+    return a.x * b.x + a.y * b.y;
+}

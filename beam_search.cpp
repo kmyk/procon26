@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <stack>
 #include <set>
+#include <map>
 #include <iterator>
 #include <unordered_set>
 #include <memory>
@@ -71,6 +72,18 @@ public:
 
 public:
     vector<placement_t> operator () (board const & a_brd, vector<block> const & blks) {
+        map<int,int> component_pack_table;
+        component_pack_table[0 + 2 * 10] = 5;
+        component_pack_table[0 + 6 * 10] = 5;
+        component_pack_table[1 + 1 * 10] = 6;
+        component_pack_table[1 + 3 * 10] = 6;
+        component_pack_table[1 + 5 * 10] = 6;
+        component_pack_table[3 + 3 * 10] = 6;
+        component_pack_table[3 + 3 * 10] = 6;
+        component_pack_table[0 + 3 * 10] = 7;
+        component_pack_table[0 + 1 * 10] = 7;
+        component_pack_table[1 + 4 * 10] = 7;
+        component_pack_table[2 + 2 * 10] = 8;
         int n = blks.size();
         highscore = a_brd.area();
         g_best_score = min(g_best_score, a_brd.area());
@@ -111,7 +124,8 @@ int nthbeam = 0;
                         npho->remaining_stone -= blk.area();
                         next.push_back(npho);
                     }
-                    bool is_just_used = false; // ぴったり嵌るような使われ方をしたか
+                    bool is_just_used = false; // ぴったり嵌るような使われ方をしたか // used_componentsと処理が被っている
+                    set<vector<int> > used_components;
                     placement_t p = initial_placement(blk, pho.brd.stone_offset());
                     do {
                         int skip;
@@ -154,9 +168,11 @@ int nthbeam = 0;
                             }
                             if (used_board.count(npho.brd.packed())) continue;
                             used_board.insert(npho.brd.packed());
-                            set<point_t> used;
+                            set<point_t> looked_cell;
+                            vector<int> components;
+                            bool is_diverged = false; // there are some too large components
                             for (point_t q : neighbors) {
-                                if (used.count(q)) continue;
+                                if (looked_cell.count(q)) continue;
                                 set<point_t> current;
                                 current.insert(q);
                                 int n = 1;
@@ -166,7 +182,7 @@ int nthbeam = 0;
                                     point_t r = stk.top(); stk.pop();
                                     repeat (i,4) {
                                         auto s = r + dp[i];
-                                        if (used.count(s)) {
+                                        if (looked_cell.count(s)) {
                                             n = 1000000007;
                                             break;
                                         }
@@ -178,8 +194,29 @@ int nthbeam = 0;
                                     }
                                     if (5 <= n) break;
                                 }
-                                if (1 <= n and n <= 4) npho.isolated[n-1] += 1;
-                                copy(current.begin(), current.end(), inserter(used, used.begin()));
+                                if (1 <= n and n <= 4) {
+                                    npho.isolated[n-1] += 1;
+                                }
+                                if (5 <= n) is_diverged = true;
+                                if (not is_diverged) {
+                                    if (n == 1 or n == 2) {
+                                        components.push_back(n);
+                                    } else if (n == 3) {
+                                        vector<point_t> ps(current.begin(), current.end());
+                                        components.push_back(3 + (cross(ps[1] - ps[0], ps[2] - ps[0]) == 0 ? 0 : 1));
+                                    } else if (n == 4) {
+                                        vector<point_t> ps(current.begin(), current.end());
+                                        int sy = abs(ps[3].y + ps[2].y + ps[1].y - 3 * ps[0].y);
+                                        int sx = abs(ps[3].x + ps[2].x + ps[1].x - 3 * ps[0].x);
+                                        components.push_back(component_pack_table[min(sy, sx) + max(sy, sx) * 10]);
+                                    }
+                                }
+                                copy(current.begin(), current.end(), inserter(looked_cell, looked_cell.begin()));
+                            }
+                            if (not is_diverged) {
+                                sort(components.begin(), components.end());
+                                if (used_components.count(components)) continue;
+                                used_components.insert(components);
                             }
                             next.push_back(pnpho);
                         }
