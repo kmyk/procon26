@@ -4,6 +4,8 @@
 #include <cassert>
 #define repeat_from(i,m,n) for (int i = (m); (i) < (n); ++(i))
 #define repeat(i,n) repeat_from(i,0,n)
+#define repeat_from_reverse(i,m,n) for (int i = (n)-1; (i) >= (m); --(i))
+#define repeat_reverse(i,n) repeat_from_reverse(i,0,n)
 typedef long long ll;
 
 constexpr int board_size = 32;
