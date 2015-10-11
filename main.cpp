@@ -43,14 +43,10 @@ int main(int argc, char **argv) {
     assert (argc == 3 or argc == 4);
     int BEAM_WIDTH = atoi(argv[1]);
     double BEAM_SEARCH_TIME = atof(argv[2]);
-    int BLOCK_OFFSET = 3 < argc ? atoi(argv[3]) : 0;
-    if (n <= BLOCK_OFFSET) {
-        cerr << "block offset is too large" << endl;
-        return 1;
-    }
+    bool IS_CHOKUDAI = 3 < argc ? atoi(argv[3]) : false;
     if (BEAM_SEARCH_TIME > 0.01) {
         clock_t start = clock();
-        beam_search(brd, blks, BEAM_WIDTH, BLOCK_OFFSET);
+        beam_search(brd, blks, BEAM_WIDTH, false);
         clock_t clock_per_width = (clock() - start) / BEAM_WIDTH;
         double sec_per_width = clock_per_width /(double) CLOCKS_PER_SEC;
         BEAM_WIDTH = min<int>(16384, (BEAM_SEARCH_TIME * 60 / sec_per_width - BEAM_WIDTH) * 0.95);
@@ -58,7 +54,7 @@ int main(int argc, char **argv) {
     }
     cerr << "start with width: " <<  BEAM_WIDTH << endl;
     signal(SIGINT, &signal_handler);
-    output_t b = { beam_search(brd, blks, BEAM_WIDTH, BLOCK_OFFSET) };
+    output_t b = { beam_search(brd, blks, BEAM_WIDTH, IS_CHOKUDAI) };
     signal(SIGINT, SIG_DFL);
     cout << b;
     export_to_file(b);

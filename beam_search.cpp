@@ -58,9 +58,11 @@ class beam_search_solver {
     int n;
     map<int,int> component_pack_table;
     array<vector<int>,2> remaining_small_blks;
+    unordered_set<bitset<board_size * board_size> > *cache;
 public:
-    explicit beam_search_solver(int a_beam_width)
-            : beam_width(a_beam_width) {
+    beam_search_solver(int a_beam_width, unordered_set<bitset<board_size * board_size> > *a_cache)
+            : beam_width(a_beam_width),
+              cache(a_cache) {
         n = -1;
         highscore = -1;
         component_pack_table[0 + 2 * 10] = 5;
@@ -77,7 +79,7 @@ public:
     }
 
 public:
-    vector<placement_t> operator () (board const & a_brd, vector<block> const & blks, int block_offset) {
+    vector<placement_t> operator () (board const & a_brd, vector<block> const & blks) {
         n = blks.size();
         repeat (j,2) remaining_small_blks[j].resize(n);
         repeat_reverse (i,n-1) {
@@ -101,7 +103,7 @@ public:
             pho.remaining_stone = 0;
             for (auto && blk : blks) pho.remaining_stone += blk.area();
             pho.plc.resize(n, { false });
-            pho.bix = block_offset;
+            pho.bix = 0;
             for (int & it : pho.isolated) it = 0;
             pho.solver = this;
             beam.push_back(ppho);
@@ -172,6 +174,7 @@ int nthbeam = 0;
                                 }
                             }
                             if (used_board.count(npho.brd.packed())) continue;
+                            if (2 <= n and cache and cache->count(npho.brd.packed())) continue;
                             used_board.insert(npho.brd.packed());
                             set<point_t> looked_cell;
                             vector<int> components;
@@ -242,10 +245,12 @@ int nthbeam = 0;
             sort(next.rbegin(), next.rend(), &photon_ptr_comparator);
             if (beam_width < next.size()) next.resize(beam_width);
             for (auto && ppho : next) ppho->brd.shrink();
+            if (cache) for (auto && ppho : next) cache->insert(ppho->brd.packed());
             next.swap(beam);
             next.clear();
             used_board.clear();
 cerr << "beam " << (nthbeam ++) << " : " << beam.size() << endl;
+if (cache) cerr << "cache " << cache->size() << endl;
             if (highscore < g_best_score) {
                 g_provisional_result = { result };
                 g_best_score = highscore;
@@ -282,10 +287,15 @@ double evaluate(photon_t const & a) {
     return a.solver->evaluate(a);
 }
 
-vector<placement_t> beam_search(board const & brd, std::vector<block> const & blks, int beam_width, int block_offset) {
-    return beam_search_solver(beam_width)(brd, blks, block_offset);
+vector<placement_t> beam_search(board const & brd, std::vector<block> const & blks, int beam_width, bool is_chokudai) {
+    if (is_chokudai) {
+        unordered_set<bitset<board_size * board_size> > cache;
+        while (true) beam_search_solver(beam_width, &cache)(brd, blks);
+    } else {
+        return beam_search_solver(beam_width, nullptr)(brd, blks);
+    }
 }
 
 vector<placement_t> beam_search(board const & brd, std::vector<block> const & blks) {
-    return beam_search(brd, blks, 1024, 0);
+    return beam_search(brd, blks, 1024, false);
 }
