@@ -46,8 +46,8 @@ double evaluate(photon_t const & a) {
         - max(0.0, a.score - a.remaining_stone * 0.8) * 64
         - a.isolated[0] * 16 * (p + 0.3)
         - a.isolated[1] *  8 * (p + 0.3)
-        - a.isolated[2] *  4 * (p + 0.3)
-        - a.isolated[3] *  2 * (p + 0.3);
+        - a.isolated[2] *  6 * (p + 0.3)
+        - a.isolated[3] *  4 * (p + 0.3);
 }
 
 // larger iff better
