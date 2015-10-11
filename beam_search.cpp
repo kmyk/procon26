@@ -23,6 +23,7 @@ using namespace std;
  * そこで境界の長さを考えてみたよ
  */
 
+class beam_search_solver;
 struct photon_t {
     board brd;
     int score; // or remaining_area
@@ -33,21 +34,11 @@ struct photon_t {
     vector<placement_t> plc;
     int bix; // current block
     int isolated[4];
+    beam_search_solver *solver;
 };
 typedef shared_ptr<photon_t> photon_ptr;
 
-double evaluate(photon_t const & a) {
-    double p = a.bix /(double) a.plc.size();
-    double q = 1 - p;
-    return
-        - a.circumference * (8 * q)
-        - a.score * (12 * p)
-        - max(0.0, a.score - a.remaining_stone * 0.8) * 64
-        - a.isolated[0] * 16 * (p + 0.3)
-        - a.isolated[1] *  8 * (p + 0.3)
-        - a.isolated[2] *  6 * (p + 0.3)
-        - a.isolated[3] *  4 * (p + 0.3);
-}
+double evaluate(photon_t const & a);
 
 // larger iff better
 bool operator < (photon_t const & a, photon_t const & b) {
@@ -64,15 +55,14 @@ class beam_search_solver {
     vector<placement_t> result;
     int highscore;
     const int beam_width;
+    int n;
+    map<int,int> component_pack_table;
+    array<vector<int>,2> remaining_small_blks;
 public:
     explicit beam_search_solver(int a_beam_width)
             : beam_width(a_beam_width) {
+        n = -1;
         highscore = -1;
-    }
-
-public:
-    vector<placement_t> operator () (board const & a_brd, vector<block> const & blks) {
-        map<int,int> component_pack_table;
         component_pack_table[0 + 2 * 10] = 5;
         component_pack_table[0 + 6 * 10] = 5;
         component_pack_table[1 + 1 * 10] = 6;
@@ -84,7 +74,20 @@ public:
         component_pack_table[0 + 1 * 10] = 7;
         component_pack_table[1 + 4 * 10] = 7;
         component_pack_table[2 + 2 * 10] = 8;
-        int n = blks.size();
+    }
+
+public:
+    vector<placement_t> operator () (board const & a_brd, vector<block> const & blks) {
+        n = blks.size();
+        repeat (j,2) remaining_small_blks[j].resize(n);
+        repeat_reverse (i,n-1) {
+            repeat (j,2) {
+                remaining_small_blks[j][i] = remaining_small_blks[j][i+1];
+            }
+            if (blks[i+1].area() <= 2) {
+                remaining_small_blks[blks[i+1].area() - 1][i] += 1;
+            }
+        }
         highscore = a_brd.area();
         g_best_score = min(g_best_score, a_brd.area());
         vector<photon_ptr> beam;
@@ -100,6 +103,7 @@ public:
             pho.plc.resize(n, { false });
             pho.bix = 0;
             for (int & it : pho.isolated) it = 0;
+            pho.solver = this;
             beam.push_back(ppho);
         }
 int nthbeam = 0;
@@ -257,7 +261,26 @@ repeat (i, min<int>(3, beam.size())) {
         }
         return result;
     }
+
+    double evaluate(photon_t const & a) {
+        double p = a.bix /(double) n;
+        double q = 1 - p;
+        return
+            - a.circumference * (8 * q)
+            - a.score * (12 * p)
+            - max(0.0, a.score - a.remaining_stone * 0.8) * 64
+            - max(0, a.isolated[0] - remaining_small_blks[0][a.bix]) * 32 * q
+            - max(0, a.isolated[1] - remaining_small_blks[1][a.bix]) * 32 * q
+            - a.isolated[0] * 16 * (q + 0.3)
+            - a.isolated[1] *  8 * (q + 0.3)
+            - a.isolated[2] *  6 * (q + 0.3)
+            - a.isolated[3] *  4 * (q + 0.3);
+    }
 };
+
+double evaluate(photon_t const & a) {
+    return a.solver->evaluate(a);
+}
 
 vector<placement_t> beam_search(board const & brd, std::vector<block> const & blks, int beam_width) {
     return beam_search_solver(beam_width)(brd, blks);
