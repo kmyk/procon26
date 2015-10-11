@@ -77,7 +77,7 @@ public:
     }
 
 public:
-    vector<placement_t> operator () (board const & a_brd, vector<block> const & blks) {
+    vector<placement_t> operator () (board const & a_brd, vector<block> const & blks, int block_offset) {
         n = blks.size();
         repeat (j,2) remaining_small_blks[j].resize(n);
         repeat_reverse (i,n-1) {
@@ -101,7 +101,7 @@ public:
             pho.remaining_stone = 0;
             for (auto && blk : blks) pho.remaining_stone += blk.area();
             pho.plc.resize(n, { false });
-            pho.bix = 0;
+            pho.bix = block_offset;
             for (int & it : pho.isolated) it = 0;
             pho.solver = this;
             beam.push_back(ppho);
@@ -282,10 +282,10 @@ double evaluate(photon_t const & a) {
     return a.solver->evaluate(a);
 }
 
-vector<placement_t> beam_search(board const & brd, std::vector<block> const & blks, int beam_width) {
-    return beam_search_solver(beam_width)(brd, blks);
+vector<placement_t> beam_search(board const & brd, std::vector<block> const & blks, int beam_width, int block_offset) {
+    return beam_search_solver(beam_width)(brd, blks, block_offset);
 }
 
 vector<placement_t> beam_search(board const & brd, std::vector<block> const & blks) {
-    return beam_search(brd, blks, 1024);
+    return beam_search(brd, blks, 1024, 0);
 }
