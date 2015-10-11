@@ -23,43 +23,40 @@ void export_to_file(output_t const & a) {
 }
 
 output_t g_provisional_result; // externed
+int g_best_score = 1000000007;;
 
 void signal_handler(int param) {
     cerr << "*** signal " << param << " caught ***" << endl;
     cout << g_provisional_result;
     cerr << "***" << endl;
     export_to_file(g_provisional_result);
+    cerr << g_best_score << endl;
     exit(param);
 }
 
-int main() {
+int main(int argc, char **argv) {
     ios_base::sync_with_stdio(false);
     input_t a; cin >> a;
     int n = a.blocks.size();
     board brd = board(a.board);
     vector<block> blks(n); repeat (i,n) blks[i] = block(a.blocks[i]);
+    assert (argc == 3);
+    int BEAM_WIDTH = atoi(argv[1]);
+    double BEAM_SEARCH_TIME = atof(argv[2]);
+    if (BEAM_SEARCH_TIME > 0.01) {
+        clock_t start = clock();
+        beam_search(brd, blks, BEAM_WIDTH);
+        clock_t clock_per_width = (clock() - start) / BEAM_WIDTH;
+        double sec_per_width = clock_per_width /(double) CLOCKS_PER_SEC;
+        BEAM_WIDTH = min<int>(16384, (BEAM_SEARCH_TIME * 60 / sec_per_width - BEAM_WIDTH) * 0.95);
+        cerr << "measured: " << sec_per_width << " sec/width" << endl;
+    }
+    cerr << "start with width: " <<  BEAM_WIDTH << endl;
     signal(SIGINT, &signal_handler);
-#if defined USE_EXACT
-    output_t b = { exact(brd, blks) };
-#elif defined USE_BEAM_SEARCH
-#ifdef BEAM_SEARCH_TIME
-#define TEST_WIDTH 128
-    clock_t start = clock();
-    beam_search(brd, blks, TEST_WIDTH);
-    clock_t clock_per_width = (clock() - start) / TEST_WIDTH;
-    double sec_per_width = clock_per_width /(double) CLOCKS_PER_SEC;
-    int width = min<int>(16384, (BEAM_SEARCH_TIME * 60 / sec_per_width - TEST_WIDTH) * 0.95);
-    cerr << "measured: " << sec_per_width << " sec/width" << endl;
-#else
-    int width = 1048;
-#endif
-    cerr << "start with width: " <<  width << endl;
-    output_t b = { beam_search(brd, blks, width) };
-#else
-#error solver is not given
-#endif
+    output_t b = { beam_search(brd, blks, BEAM_WIDTH) };
     signal(SIGINT, SIG_DFL);
     cout << b;
     export_to_file(b);
+    cerr << g_best_score << endl;
     return 0;
 }

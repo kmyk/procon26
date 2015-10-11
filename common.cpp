@@ -52,7 +52,7 @@ std::ostream & operator << (std::ostream & output, placement_t a)  {
     return output;
 }
 std::ostream & operator << (std::ostream & output, output_t const & a)  {
-    for (auto p : a.ps) output << p << std::endl;
+    for (auto p : a.ps) output << p << "\r\n";
     return output;
 }
 std::ostream & operator << (std::ostream & output, point_t const & a) { return output << "(" << a.x << ", " << a.y << ")"; }

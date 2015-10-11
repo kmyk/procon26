@@ -9,9 +9,7 @@
 #include <cassert>
 #include "procon26.hpp"
 #include "exact.hpp"
-#ifdef USE_BEAM_SEARCH
 #include "signal.hpp"
-#endif
 using namespace std;
 
 /**
@@ -75,6 +73,7 @@ public:
     vector<placement_t> operator () (board const & a_brd, vector<block> const & blks) {
         int n = blks.size();
         highscore = a_brd.area();
+        g_best_score = min(g_best_score, a_brd.area());
         vector<photon_ptr> beam;
         for (auto && brd : a_brd.split()) {
             photon_ptr ppho = make_shared<photon_t>();
@@ -99,10 +98,6 @@ int nthbeam = 0;
                 if (pho.score < highscore) {
                     highscore = pho.score;
                     result = pho.plc;
-#ifdef USE_BEAM_SEARCH
-                    g_provisional_result = { result };
-                    cerr << highscore << endl;
-#endif
                 }
                 int bix = pho.bix;
                 while (bix < n and pho.plc[bix].used) bix += 1;
@@ -203,6 +198,12 @@ int nthbeam = 0;
             next.clear();
             used_board.clear();
 cerr << "beam " << (nthbeam ++) << " : " << beam.size() << endl;
+            if (highscore < g_best_score) {
+                g_provisional_result = { result };
+                g_best_score = highscore;
+                cout << g_provisional_result;
+                cerr << g_best_score << endl;
+            }
 repeat (i, min<int>(3, beam.size())) {
     cerr << beam[i]->brd;
     cerr << "score: " << beam[i]->score << endl;

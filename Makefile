@@ -1,11 +1,7 @@
 .PHONY: all build build/fast test test/validate
 
-SOLVER ?= exact
-CXXFLAGS += -std=c++14 -Wall -DSOLVER=${SOLVER} -DUSE_$(shell echo ${SOLVER} | tr a-z A-Z) -lboost_system -lboost_filesystem
+CXXFLAGS += -std=c++14 -Wall -DSOLVER=beam_search -DUSE_BEAM_SEARCH -lboost_system -lboost_filesystem
 SRCS = beam_search.cpp exact.cpp procon26.cpp common.cpp
-ifdef TIME
-    CXXFLAGS += -DBEAM_SEARCH_TIME=${TIME}
-endif
 ifdef DEBUG
     CXXFLAGS += -g -DDEBUG -D_GLIBCXX_DEBUG
 endif
@@ -13,7 +9,7 @@ endif
 all: build
 
 build:
-	${CXX} ${CXXFLAGS} -g -O2 ${SRCS} main.cpp
+	${CXX} ${CXXFLAGS} -g ${SRCS} main.cpp
 
 build/fast:
 	${CXX} ${CXXFLAGS} -O3 -DNDEBUG ${SRCS} main.cpp
