@@ -126,6 +126,7 @@ int nthbeam = 0;
                     }
                     bool is_just_used = false; // ぴったり嵌るような使われ方をしたか // used_componentsと処理が被っている
                     set<vector<int> > used_components;
+                    int pushed_count = 0;
                     placement_t p = initial_placement(blk, pho.brd.stone_offset());
                     do {
                         int skip;
@@ -218,7 +219,13 @@ int nthbeam = 0;
                                 if (used_components.count(components)) continue;
                                 used_components.insert(components);
                             }
+                            if (is_just_used) {
+                                repeat (i,pushed_count) next.pop_back();
+                                next.push_back(pnpho);
+                                break; // justなら必ずそれを使うことにする
+                            }
                             next.push_back(pnpho);
+                            pushed_count += 1;
                         }
                         p.p.x += skip - 1;
                     } while (next_placement(p, blk, pho.brd.stone_offset(), pho.brd.stone_offset() + pho.brd.stone_size()));
