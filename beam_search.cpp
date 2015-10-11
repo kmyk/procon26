@@ -33,7 +33,7 @@ struct photon_t {
     int remaining_stone;
     vector<placement_t> plc;
     int bix; // current block
-    double bonus;
+    int isolated[4];
 };
 typedef shared_ptr<photon_t> photon_ptr;
 
@@ -44,7 +44,10 @@ double evaluate(photon_t const & a) {
         - a.circumference * (8 * q)
         - a.score * (12 * p)
         - max(0.0, a.score - a.remaining_stone * 0.8) * 64
-        + a.bonus;
+        - a.isolated[0] * 16 * (p + 0.3)
+        - a.isolated[1] *  8 * (p + 0.3)
+        - a.isolated[2] *  4 * (p + 0.3)
+        - a.isolated[3] *  2 * (p + 0.3);
 }
 
 // larger iff better
@@ -84,7 +87,7 @@ public:
             for (auto && blk : blks) pho.remaining_stone += blk.area();
             pho.plc.resize(n, { false });
             pho.bix = 0;
-            pho.bonus = 0;
+            for (int & it : pho.isolated) it = 0;
             beam.push_back(ppho);
         }
 int nthbeam = 0;
@@ -138,6 +141,9 @@ int nthbeam = 0;
                             if (pho.circumference - npho.circumference == blk.circumference()) {
                                 if (is_just_used) continue;
                                 is_just_used = true;
+                                if (1 <= blk.area() and blk.area() <= 4) {
+                                    npho.isolated[blk.area() - 1] -= 1;
+                                }
                             }
                             npho.brd.update();
                             vector<point_t> neighbors;
@@ -174,8 +180,7 @@ int nthbeam = 0;
                                     }
                                     if (5 <= n) break;
                                 }
-                                const int table[6] = { 0, 8, 4, 2, 1, 0 };
-                                npho.bonus -= table[min(5, n)] * 64;
+                                if (1 <= n and n <= 4) npho.isolated[n-1] += 1;
                                 copy(current.begin(), current.end(), inserter(used, used.begin()));
                             }
                             next.push_back(pnpho);
