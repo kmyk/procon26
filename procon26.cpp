@@ -105,6 +105,11 @@ uint64_t signature_block(bool const (& a)[block_size][block_size], point_t const
 board::board() = default;
 board::board(board_t const & a) {
     copy_cell_map(a.a, m_cell, [](bool x) -> int { return x; });
+    repeat (y, board_size) {
+        repeat (x, board_size) {
+            m_packed[y * board_size + x] = m_cell[y][x];
+        }
+    }
     shrink();
     update();
 }
@@ -203,6 +208,7 @@ bool board::is_puttable(block const & blk, placement_t const & p, int n, int *sk
 
 void board::put(point_t p, int value) {
     m_cell[p.y][p.x] = value;
+    m_packed[p.y * board_size + p.x] = value;
 }
 /**
  * @pre 置ける is_puttableが真を返す
@@ -249,22 +255,7 @@ std::vector<board> board::split() const {
     return result;
 }
 
-std::vector<bool> board::packed() const {
-    int n = std::max(m_size.y, m_size.x);
-    // int n = board_size;
-    std::vector<bool> p(n * n);
-    repeat (y, m_size.y) {
-    // repeat (y, n) {
-        repeat (x, m_size.x) {
-        // repeat (x, n) {
-            if (m_cell[y + m_offset.y][x + m_offset.x]) {
-            // if (m_cell[y][x]) {
-                p[y * n + x] = true;
-            }
-        }
-    }
-    return p;
-}
+std::bitset<board_size*board_size> board::packed() const { return m_packed; }
 
 
 block::block() = default;

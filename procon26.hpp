@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <bitset>
 #include <set>
 #include <cassert>
 #include <cstdint>
@@ -84,6 +85,7 @@ public:
     int m_stone_area;
     int m_first_stone;
     int m_skips[N][N];
+    std::bitset<board_size*board_size> m_packed;
 
 public:
     board();
@@ -143,7 +145,7 @@ public:
      * @return どこまでずらしてもだめならはみ出る値が返る
      */
     int skip(point_t p) const;
-    std::vector<bool> packed() const;
+    std::bitset<board_size*board_size> packed() const;
 };
 
 /**

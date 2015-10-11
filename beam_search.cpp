@@ -92,6 +92,7 @@ public:
         }
 int nthbeam = 0;
         vector<photon_ptr> next;
+        unordered_set<bitset<board_size*board_size> > used_board;
         while (not beam.empty()) {
             for (auto && ppho : beam) {
                 photon_t const & pho = *ppho;
@@ -156,6 +157,8 @@ int nthbeam = 0;
                                     }
                                 }
                             }
+                            if (used_board.count(npho.brd.packed())) continue;
+                            used_board.insert(npho.brd.packed());
                             set<point_t> used;
                             for (point_t q : neighbors) {
                                 if (used.count(q)) continue;
@@ -198,6 +201,7 @@ int nthbeam = 0;
             for (auto && ppho : next) ppho->brd.shrink();
             next.swap(beam);
             next.clear();
+            used_board.clear();
 cerr << "beam " << (nthbeam ++) << " : " << beam.size() << endl;
 repeat (i, min<int>(3, beam.size())) {
     cerr << beam[i]->brd;
