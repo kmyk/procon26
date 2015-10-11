@@ -9,13 +9,13 @@ endif
 all: build
 
 build:
-	${CXX} ${CXXFLAGS} -g ${SRCS} main.cpp
+	${CXX}  ${SRCS} main.cpp ${CXXFLAGS} -g
 
 build/fast:
-	${CXX} ${CXXFLAGS} -O3 -DNDEBUG ${SRCS} main.cpp
+	${CXX} ${SRCS} main.cpp ${CXXFLAGS} -O3 -DNDEBUG 
 
 build/unittest:
-	${CXX} ${CXXFLAGS} -O2 -g ${SRCS} unittest.cpp
+	${CXX} ${SRCS} unittest.cpp ${CXXFLAGS} -O2 -g 
 
 test:
 	make test/unittest
