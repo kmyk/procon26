@@ -27,6 +27,7 @@ class beam_search_solver;
 struct photon_t {
     board brd;
     int score; // or remaining_area
+    int stone_count;
     int circumference;
     int dead_area;
     int dead_stone;
@@ -54,6 +55,7 @@ class beam_search_solver {
     vector<block> blks; // immutable
     vector<placement_t> result;
     int highscore;
+    int least_stone;
     const int beam_width;
     int n;
     map<int,int> component_pack_table;
@@ -64,7 +66,8 @@ public:
             : beam_width(a_beam_width),
               cache(a_cache) {
         n = -1;
-        highscore = -1;
+        highscore = 1000000007;
+        least_stone = 1000000007;
         component_pack_table[0 + 2 * 10] = 5;
         component_pack_table[0 + 6 * 10] = 5;
         component_pack_table[1 + 1 * 10] = 6;
@@ -91,13 +94,17 @@ public:
             }
         }
         highscore = a_brd.area();
-        g_best_score = min(g_best_score, a_brd.area());
+        if (make_pair(a_brd.area(), 0) < make_pair(g_best_score, g_best_stone)) {
+            g_best_score = a_brd.area();
+            g_best_stone = 0;
+        }
         vector<photon_ptr> beam;
         for (auto && brd : a_brd.split()) {
             photon_ptr ppho = make_shared<photon_t>();
             photon_t & pho = *ppho;
             pho.brd = brd;
             pho.score = a_brd.area();
+            pho.stone_count = 0;
             pho.circumference = 0; // 相対的なもののみ気にする
             pho.dead_area = a_brd.area() - brd.area();
             pho.remaining_stone = 0;
@@ -114,8 +121,9 @@ int nthbeam = 0;
         while (not beam.empty()) {
             for (auto && ppho : beam) {
                 photon_t const & pho = *ppho;
-                if (pho.score < highscore) {
+                if (make_pair(pho.score, pho.stone_count) < make_pair(highscore, least_stone)) {
                     highscore = pho.score;
+                    least_stone = pho.stone_count;
                     result = pho.plc;
                 }
                 int bix = pho.bix;
@@ -141,6 +149,7 @@ int nthbeam = 0;
                             *pnpho = pho;
                             photon_t & npho = *pnpho;
                             npho.plc[bix] = p;
+                            npho.stone_count += 1;
                             npho.bix = bix + 1;
                             npho.score -= blk.area();
                             npho.remaining_stone -= blk.area();
@@ -251,11 +260,12 @@ int nthbeam = 0;
             used_board.clear();
 cerr << "beam " << (nthbeam ++) << " : " << beam.size() << endl;
 if (cache) cerr << "cache " << cache->size() << endl;
-            if (highscore < g_best_score) {
+            if (make_pair(highscore, least_stone) < make_pair(g_best_score, g_best_stone)) {
                 g_provisional_result = { result };
                 g_best_score = highscore;
+                g_best_stone = least_stone;
                 cout << g_provisional_result;
-                cerr << g_best_score << endl;
+                cerr << g_best_score << " " << g_best_stone << endl;
             }
 repeat (i, min<int>(3, beam.size())) {
     cerr << beam[i]->brd;
@@ -279,7 +289,8 @@ repeat (i, min<int>(3, beam.size())) {
             - a.isolated[0] * 16 * (q + 0.3)
             - a.isolated[1] *  8 * (q + 0.3)
             - a.isolated[2] *  6 * (q + 0.3)
-            - a.isolated[3] *  4 * (q + 0.3);
+            - a.isolated[3] *  4 * (q + 0.3)
+            - a.stone_count * 0.00001;
     }
 };
 

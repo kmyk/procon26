@@ -24,13 +24,14 @@ void export_to_file(output_t const & a) {
 
 output_t g_provisional_result; // externed
 int g_best_score = 1000000007;;
+int g_best_stone = 1000000007;;
 
 void signal_handler(int param) {
     cerr << "*** signal " << param << " caught ***" << endl;
     cout << g_provisional_result;
     cerr << "***" << endl;
     export_to_file(g_provisional_result);
-    cerr << g_best_score << endl;
+    cerr << g_best_score << " " << g_best_stone << endl;
     exit(param);
 }
 
@@ -58,6 +59,6 @@ int main(int argc, char **argv) {
     signal(SIGINT, SIG_DFL);
     cout << b;
     export_to_file(b);
-    cerr << g_best_score << endl;
+    cerr << g_best_score << " " << g_best_stone << endl;
     return 0;
 }
