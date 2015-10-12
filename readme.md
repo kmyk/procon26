@@ -10,6 +10,8 @@
 -   決勝 4位
 -   エキシビションマッチ 6位
 
+![](ss.png)
+
 ## 補助ツール
 
 SDL2.0,SDL2_image,SDL2_gfx,SDL2_ttfが必要です
