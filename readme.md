@@ -1,4 +1,4 @@
-# <http://www.procon.gr.jp/>
+# 高専プロコン 競技部門 神戸大学
 
 ## ビームサーチ
 
@@ -30,5 +30,6 @@ SDL2.0,SDL2_image,SDL2_gfx,SDL2_ttfが必要です
 
 ## linkとか
 
+-   <http://www.procon.gr.jp/>
 -   <http://www.procon.gr.jp/uploads/procon26/Apply26.pdf>
 -   <http://en.wikipedia.org/wiki/Exact_cover>
