@@ -118,10 +118,14 @@ def score(board):
                 n += 1
     return n
 
+def stone(out):
+    return len(list(filter(lambda x: x is not None, out)))
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('-i', '--input', metavar='PATH')
+    parser.add_argument('--score', action='store_true')
     args = parser.parse_args()
 
     inp = read_input(open(args.input))
@@ -132,5 +136,8 @@ if __name__ == '__main__':
         print('error:', e)
         exit(1)
     else:
-        print(visualize(board, double=(10 + 26 + 26 < len(inp['blocks']))))
-        print('score: {}'.format(score(board)))
+        if args.score:
+            print('{} {}'.format(score(board), stone(out)))
+        else:
+            print(visualize(board, double=(10 + 26 + 26 < len(inp['blocks']))))
+            print('score: {}'.format(score(board)))
