@@ -9,7 +9,6 @@
 #include <memory>
 #include <cassert>
 #include "procon26.hpp"
-#include "exact.hpp"
 #include "signal.hpp"
 using namespace std;
 

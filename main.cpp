@@ -4,7 +4,6 @@
 #include <csignal>
 #include <boost/filesystem.hpp>
 #include "procon26.hpp"
-#include "exact.hpp"
 #include "beam_search.hpp"
 
 using namespace std;

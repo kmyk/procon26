@@ -7,6 +7,7 @@ using namespace boost;
 
 output_t g_provisional_result; // dummy
 int g_best_score;
+int g_best_stone;
 
 BOOST_AUTO_TEST_SUITE(suite_block)
 
