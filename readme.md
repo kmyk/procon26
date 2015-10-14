@@ -27,6 +27,21 @@
     -   逐次提出には`NPRACTICE=t make ...`とする
 -   compileできないとか疑問点とかあればissue建てるとかtwitterで聞くとかしてください
 
+### コード
+
+-   `beam_search.cpp`
+    -   探索の中心部分
+    -   341行 (コメント含む)
+-   `beam_search.hpp`
+-   `procon26.cpp`
+    -   汎用の探索用の情報を載せた盤や石のclass
+    -   397行 (コメント含む)
+-   `procon26.hpp`
+-   `common.cpp`
+-   `common.hpp`
+-   `signal.hpp`
+-   `main.cpp`
+
 ### license
 
 MIT License
