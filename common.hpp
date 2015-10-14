@@ -1,3 +1,8 @@
+/**
+ * @file common.hpp
+ * @author Kimiyuki Onaka
+ * @brief 極基本的な型/定数/関数とその入出力
+ */
 #pragma once
 #include <iostream>
 #include <vector>
@@ -28,6 +33,9 @@ struct input_t {
 
 std::istream & operator >> (std::istream & input, board_t & a) ;
 std::istream & operator >> (std::istream & input, block_t & a) ;
+/**
+ * @brief 問題が規定する形式で入力
+ */
 std::istream & operator >> (std::istream & input, input_t & a) ;
 
 enum flip_t { H, T };
@@ -47,6 +55,9 @@ flip_t flip(flip_t f);
 rot_t rot90(rot_t r);
 bool operator == (point_t const & a, point_t const & b);
 bool operator < (point_t const & a, point_t const & b);
+/**
+ * @attention 速度のためinline化 まあまあ効果がある
+ */
 inline point_t operator + (point_t const & a, point_t const & b) {
      return (point_t) { a.x + b.x, a.y + b.y };
 }
@@ -55,6 +66,9 @@ point_t operator - (point_t const & a, point_t const & b);
 std::ostream & operator << (std::ostream & output, flip_t a);
 std::ostream & operator << (std::ostream & output, rot_t a) ;
 std::ostream & operator << (std::ostream & output, placement_t a) ;
+/**
+ * @brief 問題が規定する形式で出力
+ */
 std::ostream & operator << (std::ostream & output, output_t const & a) ;
 std::ostream & operator << (std::ostream & output, point_t const & a);
 
@@ -63,6 +77,9 @@ const int dx[5] = { 0, 0, 1, -1, 0 };
 const point_t dp[5] = { { 0, 1 }, { 0, -1 }, { 1, 0 }, { -1, 0 }, { 0, 0 } };
 bool is_on(point_t const & p, point_t const & size);
 bool is_on_board(point_t const & p);
+/**
+ * @brief pointwise min
+ */
 point_t pwmin(point_t const & a, point_t const & b);
 point_t pwmax(point_t const & a, point_t const & b);
 int cross(point_t const & a, point_t const & b);

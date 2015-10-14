@@ -1,3 +1,8 @@
+/**
+ * @file procon26.hpp
+ * @author Kimiyuki Onaka
+ * @brief 効率良い探索のために必要な情報を添えた、盤と石のclass
+ */
 #pragma once
 #include <vector>
 #include <bitset>
@@ -71,21 +76,22 @@ class block;
 /**
  * @brief 役割: 原点と大きさの概念と置いた石の情報の吸収
  * @attention MUTABLE
+ * @note fieldって呼ぶべきだったかも
  */
 class board {
 public:
     static constexpr int N = board_size;
 public:
     int m_cell[N][N];
-    point_t m_offset;
+    point_t m_offset; /// @brief 空白のbounding boxの
     point_t m_size;
-    int m_area;
-    point_t m_stone_offset;
+    int m_area; /// @brief 空白の
+    point_t m_stone_offset; /// @brief 既に置いてある石のbounding boxの
     point_t m_stone_size;
     int m_stone_area;
-    int m_first_stone;
-    int m_skips[N][N];
-    std::bitset<board_size*board_size> m_packed;
+    int m_first_stone; /// @brief 自由な位置に置いた石のindex
+    int m_skips[N][N]; /// @brief boyer-moore的なあれのためのそれ
+    std::bitset<board_size*board_size> m_packed; /// 
 
 public:
     board();
@@ -110,6 +116,7 @@ public:
     void update();
     /**
      * @brief offsetとsize等を更新
+     * @attention skipの情報が更新されるため探索の前に呼ぶとよい
      */
     void shrink();
     /**
@@ -161,10 +168,10 @@ public:
     point_t m_size[2][4];
     int m_area;
     int m_circumference;
-    bool m_duplicated[2][4]; // true => you should ignore it
+    bool m_duplicated[2][4]; /// @brief 真なら無視すべき
     std::vector<point_t> m_stones[2][4];
     std::vector<int> m_skips[2][4];
-    uint64_t m_signature;
+    uint64_t m_signature; /// @brief 位置や向きによらず形のみから定まる値
 public:
     block();
     explicit block(block_t const & a);
@@ -196,6 +203,7 @@ public:
     inline std::vector<point_t> const & stones(flip_t f, rot_t r) const { return m_stones[f][r]; }
     /**
      * @return in board world
+     * @attention 遅い
      */
     [[deprecated]]
     std::vector<point_t> stones(placement_t const & p) const;
@@ -221,18 +229,22 @@ bool is_puttable(board const & brd, block const & blk, placement_t const & p, in
  */
 void put_stone(board & brd, block const & blk, placement_t const & p, int value);
 
+/**
+ * @brief 試すべき石の置き方を列挙
+ */
 placement_t initial_placement(block const & blk, point_t const & lp);
 bool next_placement(placement_t & p, block const & blk, point_t const & lp, point_t const & rp);
-
-void update_bounding_box(board const & brd, block const & blk, placement_t const & p, point_t const & lp, point_t const & rp, point_t *nlp, point_t *nrp);
 
 /**
  * @attention for debug
  */
 std::ostream & operator << (std::ostream & out, board const & brd);
 
-/*
- * 1 1
+
+/**
+ * @brief m_signatureの値の表
+ */
+/* 1 1
  * 2 11
  * 3 111
  *    1

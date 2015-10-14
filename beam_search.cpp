@@ -1,3 +1,8 @@
+/**
+ * @file beam_search.cpp
+ * @author Kimiyuki Onaka
+ * @brief 解の探索をする
+ */
 #include "beam_search.hpp"
 #include <vector>
 #include <algorithm>
@@ -28,19 +33,23 @@ struct photon_t {
     int score; // or remaining_area
     int stone_count;
     int circumference;
-    int dead_area;
     int dead_stone;
     int remaining_stone;
     vector<placement_t> plc;
-    int bix; // current block
-    int isolated[4];
+    int bix; /// @brief 次見る石のindex
+    int isolated[4]; /// @brief 孤立した空白の数 indexは面積-1
     beam_search_solver *solver;
 };
+/**
+ * @note pointerにするとちょっとだけ速くなったはず
+ */
 typedef shared_ptr<photon_t> photon_ptr;
 
 double evaluate(photon_t const & a);
 
-// larger iff better
+/**
+ * @brief 良い方が大きい
+ */
 bool operator < (photon_t const & a, photon_t const & b) {
     return evaluate(a) < evaluate(b);
 }
@@ -56,10 +65,10 @@ class beam_search_solver {
     int highscore;
     int least_stone;
     const int beam_width;
-    int n;
-    map<int,int> component_pack_table;
+    int n; // blks.size()
+    map<int,int> component_pack_table; /// @brief 石のマスの状況から石の種類を復元するための表
     array<vector<int>,2> remaining_small_blks;
-    unordered_set<bitset<board_size * board_size> > *cache;
+    unordered_set<bitset<board_size * board_size> > *cache; /// @brief 一度でもビームに載った盤面の
 public:
     beam_search_solver(int a_beam_width, unordered_set<bitset<board_size * board_size> > *a_cache)
             : beam_width(a_beam_width),
@@ -81,7 +90,12 @@ public:
     }
 
 public:
+    /**
+     * @attention 長い
+     * @todo 分割
+     */
     vector<placement_t> operator () (board const & a_brd, vector<block> const & blks) {
+        // 初期化
         n = blks.size();
         repeat (j,2) remaining_small_blks[j].resize(n);
         repeat_reverse (i,n-1) {
@@ -97,15 +111,15 @@ public:
             g_best_score = a_brd.area();
             g_best_stone = 0;
         }
+        // ビームサーチ 初期状態
         vector<photon_ptr> beam;
-        for (auto && brd : a_brd.split()) {
+        for (auto && brd : a_brd.split()) { // 初期の非連結成分同士は真に独立
             photon_ptr ppho = make_shared<photon_t>();
             photon_t & pho = *ppho;
             pho.brd = brd;
             pho.score = a_brd.area();
             pho.stone_count = 0;
-            pho.circumference = 0; // 相対的なもののみ気にする
-            pho.dead_area = a_brd.area() - brd.area();
+            pho.circumference = 0; // 相対的なもののみ気にするので0でよい
             pho.remaining_stone = 0;
             for (auto && blk : blks) pho.remaining_stone += blk.area();
             pho.plc.resize(n, { false });
@@ -115,21 +129,24 @@ public:
             beam.push_back(ppho);
         }
 int nthbeam = 0;
+        // ビーム発射
         vector<photon_ptr> next;
         unordered_set<bitset<board_size*board_size> > used_board;
         while (not beam.empty()) {
             for (auto && ppho : beam) {
                 photon_t const & pho = *ppho;
+                // ハイスコアの更新
                 if (make_pair(pho.score, pho.stone_count) < make_pair(highscore, least_stone)) {
                     highscore = pho.score;
                     least_stone = pho.stone_count;
                     result = pho.plc;
                 }
+                // 石を置く
                 int bix = pho.bix;
                 while (bix < n and pho.plc[bix].used) bix += 1;
                 if (bix < n) {
                     block const & blk = blks[bix];
-                    {
+                    { // 置かなかった場合
                         photon_ptr npho = make_shared<photon_t>();
                         *npho = pho;
                         npho->bix = bix + 1;
@@ -152,6 +169,7 @@ int nthbeam = 0;
                             npho.bix = bix + 1;
                             npho.score -= blk.area();
                             npho.remaining_stone -= blk.area();
+                            // circumference 更新
                             repeat (j, blk.area()) {
                                 point_t q = blk.stones(p.f,p.r)[j] + p.p;
                                 repeat (i,4) {
@@ -163,6 +181,7 @@ int nthbeam = 0;
                                 }
                                 npho.brd.put(q, 2+bix);
                             }
+                            // ぴったり嵌まる場合
                             if (pho.circumference - npho.circumference == blk.circumference()) {
                                 if (is_just_used) continue;
                                 is_just_used = true;
@@ -171,6 +190,7 @@ int nthbeam = 0;
                                 }
                             }
                             npho.brd.update();
+                            // 接続する空白
                             vector<point_t> neighbors;
                             repeat (j, blk.area()) {
                                 point_t q = blk.stones(p.f,p.r)[j] + p.p;
@@ -181,9 +201,11 @@ int nthbeam = 0;
                                     }
                                 }
                             }
+                            // cache
                             if (used_board.count(npho.brd.packed())) continue;
                             if (2 <= n and cache and cache->count(npho.brd.packed())) continue;
                             used_board.insert(npho.brd.packed());
+                            // 周囲の孤立した空白の探索
                             set<point_t> looked_cell;
                             vector<int> components;
                             bool is_diverged = false; // there are some too large components
@@ -191,9 +213,10 @@ int nthbeam = 0;
                                 if (looked_cell.count(q)) continue;
                                 set<point_t> current;
                                 current.insert(q);
-                                int n = 1;
+                                int n = 1; // 空白の大きさ
                                 stack<point_t> stk;
                                 stk.push(q);
+                                // dfs
                                 while (not stk.empty()) {
                                     point_t r = stk.top(); stk.pop();
                                     repeat (i,4) {
@@ -215,6 +238,7 @@ int nthbeam = 0;
                                 }
                                 if (5 <= n) is_diverged = true;
                                 if (not is_diverged) {
+                                    // 空白の種類の判別
                                     if (n == 1 or n == 2) {
                                         components.push_back(n);
                                     } else if (n == 3) {
@@ -229,7 +253,7 @@ int nthbeam = 0;
                                 }
                                 copy(current.begin(), current.end(), inserter(looked_cell, looked_cell.begin()));
                             }
-                            if (not is_diverged) {
+                            if (not is_diverged) { // 小さい空白だけに分割する場合の重複排除
                                 sort(components.begin(), components.end());
                                 if (used_components.count(components)) continue;
                                 used_components.insert(components);
@@ -245,7 +269,7 @@ int nthbeam = 0;
                         p.p.x += skip - 1;
                     } while (next_placement(p, blk, pho.brd.stone_offset(), pho.brd.stone_offset() + pho.brd.stone_size()));
                 }
-                if (beam_width * 10 < next.size()) {
+                if (beam_width * 10 < next.size()) { // 全部貯めてるとoom killerさん
                     sort(next.rbegin(), next.rend(), &photon_ptr_comparator);
                     next.resize(beam_width);
                 }
@@ -257,15 +281,20 @@ int nthbeam = 0;
             next.swap(beam);
             next.clear();
             used_board.clear();
+            // ここからその石に関して終わったので出力
 cerr << "beam " << (nthbeam ++) << " : " << beam.size() << endl;
 if (cache) cerr << "cache " << cache->size() << endl;
+            // 全体のハイスコアの更新と出力
             if (make_pair(highscore, least_stone) < make_pair(g_best_score, g_best_stone)) {
                 g_provisional_result = { result };
                 g_best_score = highscore;
                 g_best_stone = least_stone;
+#ifdef NPRACTICE
                 cout << g_provisional_result;
+#endif
                 cerr << g_best_score << " " << g_best_stone << endl;
             }
+            // 石ごとに途中経過を出力
 repeat (i, min<int>(3, beam.size())) {
     cerr << beam[i]->brd;
     cerr << "score: " << beam[i]->score << endl;
@@ -273,6 +302,7 @@ repeat (i, min<int>(3, beam.size())) {
     cerr << "circumference: " << beam[i]->circumference << endl;
 }
         }
+        // ビーム終了
         return result;
     }
 

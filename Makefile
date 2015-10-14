@@ -1,9 +1,15 @@
 .PHONY: all build build/fast test test/validate
 
-CXXFLAGS += -std=c++14 -Wall -lboost_system -lboost_filesystem
+CXXFLAGS += -std=c++14 -Wall
 SRCS = beam_search.cpp procon26.cpp common.cpp
 ifdef DEBUG
     CXXFLAGS += -g -DDEBUG -D_GLIBCXX_DEBUG
+endif
+ifdef NPRACTICE
+    CXXFLAGS += -DNPRACTICE
+endif
+ifdef USE_FILE_DUMP
+    CXXFLAGS += -DUSE_FILE_DUMP -lboost_system -lboost_filesystem
 endif
 
 all: build

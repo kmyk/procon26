@@ -376,15 +376,6 @@ bool next_placement(placement_t & p, block const & blk, point_t const & lp, poin
     return true;
 }
 
-void update_bounding_box(board const & brd, block const & blk, placement_t const & p, point_t const & lp, point_t const & rp, point_t *nlp, point_t *nrp) {
-    *nlp = p.p + blk.offset(p);
-    *nrp = p.p + blk.offset(p) + blk.size(p);
-    if (not brd.is_new()) { // 古いやつと合成
-        *nlp = pwmin(*nlp, lp);
-        *nrp = pwmax(*nrp, rp);
-    }
-}
-
 std::ostream & operator << (std::ostream & out, board const & brd) {
     repeat (y, board_size) {
         repeat (x, board_size) {

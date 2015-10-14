@@ -2,13 +2,16 @@
 #include <fstream>
 #include <sstream>
 #include <csignal>
+#ifdef USE_FILE_DUMP
 #include <boost/filesystem.hpp>
+#endif
 #include "procon26.hpp"
 #include "beam_search.hpp"
 
 using namespace std;
 
 void export_to_file(output_t const & a) {
+#ifdef USE_FILE_DUMP
     string path; {
         int i = 0;
         do {
@@ -19,6 +22,7 @@ void export_to_file(output_t const & a) {
     }
     ofstream fp(path, ios::out);
     fp << a;
+#endif
 }
 
 output_t g_provisional_result; // externed
@@ -44,7 +48,7 @@ int main(int argc, char **argv) {
     int BEAM_WIDTH = atoi(argv[1]);
     double BEAM_SEARCH_TIME = atof(argv[2]);
     bool IS_CHOKUDAI = 3 < argc ? atoi(argv[3]) : false;
-    if (BEAM_SEARCH_TIME > 0.01) {
+    if (BEAM_SEARCH_TIME > 0.01) { // 幅の自動調整
         clock_t start = clock();
         beam_search(brd, blks, BEAM_WIDTH, false);
         clock_t clock_per_width = (clock() - start) / BEAM_WIDTH;
@@ -56,7 +60,9 @@ int main(int argc, char **argv) {
     signal(SIGINT, &signal_handler);
     output_t b = { beam_search(brd, blks, BEAM_WIDTH, IS_CHOKUDAI) };
     signal(SIGINT, SIG_DFL);
+    cerr << "*** done ***" << endl;
     cout << b;
+    cerr << "***" << endl;
     export_to_file(b);
     cerr << g_best_score << " " << g_best_stone << endl;
     return 0;
