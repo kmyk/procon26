@@ -4,7 +4,7 @@
 
 ビームサーチです
 
-[解説記事](http://solorab.net/blog/2015/10/13/procon26-program/)
+[解説記事](https://kimiyuki.net/blog/2015/10/13/procon26-program/)
 
 -   予選 1位
 -   朝のOB戦 2位
